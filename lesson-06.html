@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<!--
+  lesson-06.html 第六课《星星位置计算器》。
+  表单是 HTML，计算在 calculator.js。
+  打开页面就会用默认的「北京、2026-03-20 20:00、织女」算一遍，
+  和第四、第五课的手算是同一道题。
+-->
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>星星位置计算器 · 星空坐标学</title>
+    <meta name="description" content="输入时间、地点和星星，算出儒略日、恒星时、时角、高度、方位和升落时刻。">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon.ico" sizes="any">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要内容</a>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="index.html">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path fill="#e6c27a" d="M8 0.8 L9.1 6.4 L15.2 8 L9.1 9.6 L8 15.2 L6.9 9.6 L0.8 8 L6.9 6.4 Z"/>
+          </svg>
+          星空坐标学
+        </a>
+        <p class="kicker">第六课</p>
+        <h1>星星位置计算器</h1>
+      </div>
+    </header>
+
+    <main class="wrap lesson-main" id="main">
+      <p class="goal">
+        <strong>学习目标：</strong>会输入时间、时区、经纬度和一颗星，读懂计算器给出的每一步，并用第四、第五课的手算去核对。
+      </p>
+
+      <section class="note">
+        <h2>一句话概括</h2>
+        <p>把前五课串起来：当地时间变成恒星时，恒星时减赤经得到时角，时角再变成高度、方位和升落钟点。</p>
+      </section>
+
+      <section class="note">
+        <h2>核心知识点</h2>
+        <p>下面的默认值就是第四课、第五课的例题：北京时间 2026-03-20 20:00（UTC+8），北纬 40°，东经 116.4°，织女。打开页面就会看到结果。改任何一个数，结果会跟着重算。</p>
+        <p>经度东正西负。时区写成小时，北京是 8，不是 800。选「自己输入赤经、赤纬」时，赤经用时分秒，赤纬用度分秒，南纬把方向改成「南」。</p>
+
+        <!--
+          form 把相关输入收成一组。这里没有提交到服务器，
+          calculator.js 监听 input 事件，在你自己的浏览器里算。
+        -->
+        <form id="calc-form" class="diagram-panel">
+          <div class="calc-grid">
+            <label class="field">日期
+              <input id="date" type="date" value="2026-03-20" required>
+            </label>
+            <label class="field">当地时间
+              <input id="time" type="time" value="20:00" required>
+            </label>
+            <label class="field">时区（小时，东正）
+              <input id="tz" type="number" step="0.5" value="8">
+            </label>
+            <label class="field">纬度（北正，度）
+              <input id="lat" type="number" step="0.01" value="40">
+            </label>
+            <label class="field">经度（东正，度）
+              <input id="lon" type="number" step="0.01" value="116.4">
+            </label>
+            <label class="field">星星
+              <select id="star"></select>
+            </label>
+          </div>
+
+          <div class="presets city-presets">
+            <button type="button" data-lat="40" data-lon="116.4" data-tz="8" aria-pressed="true">北京 40°N</button>
+            <button type="button" data-lat="31.2" data-lon="121.5" data-tz="8" aria-pressed="false">上海</button>
+            <button type="button" data-lat="23.1" data-lon="113.3" data-tz="8" aria-pressed="false">广州</button>
+            <button type="button" data-lat="30.7" data-lon="104.1" data-tz="8" aria-pressed="false">成都</button>
+            <button type="button" data-lat="43.8" data-lon="87.6" data-tz="8" aria-pressed="false">乌鲁木齐</button>
+            <button type="button" data-lat="-33.87" data-lon="151.21" data-tz="10" aria-pressed="false">悉尼</button>
+            <button type="button" data-lat="51.5" data-lon="-0.12" data-tz="0" aria-pressed="false">伦敦</button>
+            <button type="button" data-lat="40.71" data-lon="-74.01" data-tz="-5" aria-pressed="false">纽约</button>
+          </div>
+
+          <!-- hidden 是 HTML 属性：为真时浏览器不显示这块。选「自定」后脚本会把它打开。 -->
+          <div id="custom-coords" class="calc-grid" hidden>
+            <label class="field">赤经 时
+              <input id="ra-h" type="number" min="0" max="24" step="1" value="18">
+            </label>
+            <label class="field">赤经 分
+              <input id="ra-m" type="number" min="0" max="59" step="1" value="36">
+            </label>
+            <label class="field">赤经 秒
+              <input id="ra-s" type="number" min="0" max="59.999" step="0.001" value="56.336">
+            </label>
+            <label class="field">赤纬方向
+              <select id="dec-sign">
+                <option value="N" selected>北</option>
+                <option value="S">南</option>
+              </select>
+            </label>
+            <label class="field">赤纬 度
+              <input id="dec-d" type="number" min="0" max="90" step="1" value="38">
+            </label>
+            <label class="field">赤纬 分
+              <input id="dec-m" type="number" min="0" max="59" step="1" value="47">
+            </label>
+            <label class="field field-wide">赤纬 秒
+              <input id="dec-s" type="number" min="0" max="59.99" step="0.01" value="1.28">
+            </label>
+          </div>
+
+          <div id="calc-result" aria-live="polite">
+            <p>正在准备计算。如果一直停在这里，说明浏览器没有运行 JavaScript。</p>
+          </div>
+        </form>
+        <p>升落时刻是几何高度 0° 的钟点，按你填的那一个当地日期。拱极星和不升的星不会假装有一个升起时间。和今晚的精密星历比，还差岁差和大气折射，通常是零点几度，见附录。</p>
+      </section>
+
+      <section class="note">
+        <h2>有趣的事实</h2>
+        <ul>
+          <li>默认这道题的儒略日正好是整数 2461120，因为世界时是中午。整数儒略日从中午起算，这是历史留下来的习惯。</li>
+          <li>把星星换成天狼，同一时刻高度大约 +32°，方位大约 195°，在正南天空里，比织女好找。</li>
+          <li>纽约的时区填 −5（标准时）。夏令时要改成 −4，脚本不会自己判断夏令时。</li>
+        </ul>
+      </section>
+
+      <section class="note">
+        <h2>小练习</h2>
+        <p>用计算器核对手算，再点开答案。</p>
+        <ol class="exercises">
+          <li>
+            <p>保持默认的北京、织女和日期，只把时间改成 07:00。高度应接近多少？</p>
+            <details class="answer">
+              <summary>查看答案</summary>
+              <p>接近 88.8°。07:01 是这一天的上中天，织女几乎在天顶。20:00 则在地平线下约 10°，这正是第四课算出来的时角还差很远。</p>
+            </details>
+          </li>
+          <li>
+            <p>地点改成北京，星星改成水委一。这一天为什么没有升起时间？</p>
+            <details class="answer">
+              <summary>查看答案</summary>
+              <p>水委一赤纬大约 −57°，比 40° − 90° 更南。cos H₀ 大于 1，在北京永不升起。计算器会写明它不升出地平线。</p>
+            </details>
+          </li>
+          <li>
+            <p>若把时区误填成 0，但钟点仍写 20:00，世界时错了几小时？恒星时大约会偏多少度？</p>
+            <details class="answer">
+              <summary>查看答案</summary>
+              <p>世界时晚算了 8 小时。恒星时大约也多转 8 × 15° = 120°，再加恒星时跑得稍快的那一点。高度和方位都会明显不对。时区一定要和钟点配套。</p>
+            </details>
+          </li>
+        </ol>
+      </section>
+
+      <section class="note">
+        <h2>参考资料</h2>
+        <ul class="refs">
+          <li><code>calculator.js</code> 里每一段公式都有中文注释，并写了用来对照的 Meeus 例题。</li>
+          <li>Jean Meeus, <cite>Astronomical Algorithms</cite>，儒略日、式 (12.4) 的恒星时、式 (12.5)(12.6) 的高度和方位。</li>
+          <li>星的坐标见附录亮星表，历元 J2000.0。岁差和折射见「进阶话题」。</li>
+        </ul>
+      </section>
+
+      <nav class="pager" aria-label="课文前后">
+        <a href="lesson-05.html">上一课<small>坐标转换与升落计算</small></a>
+        <a href="index.html">返回首页</a>
+        <a href="appendix-glossary.html">下一页<small>术语表</small></a>
+      </nav>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>算完可以翻附录：名词、二十颗亮星的坐标，以及这套算法故意没做的修正。</p>
+      </div>
+    </footer>
+    <!-- 普通脚本，不用 type="module"，双击 html 也能跑。 -->
+    <script src="calculator.js"></script>
+  </body>
+</html>
