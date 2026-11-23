@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<!--
+  index.html 是网站的首页，也是入口。
+  用浏览器直接打开这个文件，或者以后放到 GitHub Pages 上，都会先看到这一页。
+
+  这份注释是写给正在学网页的你：
+  HTML 负责「页面上有什么、按什么顺序排」。颜色和间距在 style.css。
+  注释写在源文件里给读代码的人看，浏览器不会把注释画到页面上。
+-->
+<html lang="zh-CN">
+  <!-- lang 告诉浏览器和朗读软件：这页主要是简体中文。 -->
+  <head>
+    <!-- head 里放的是「关于这一页的信息」，不是正文。 -->
+
+    <meta charset="UTF-8">
+    <!--
+      charset 声明文件使用 UTF-8 编码。
+      没有这一行，中文有可能变成乱码。文件本身也必须用 UTF-8 保存。
+    -->
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--
+      viewport 是给手机用的。
+      width=device-width 表示「按手机的真实宽度来排版」，
+      而不是先按很宽的桌面排好、再缩小，那样字会小得看不清。
+    -->
+
+    <title>星空坐标学</title>
+    <!-- title 出现在浏览器标签上，不会出现在页面正文里。 -->
+
+    <meta name="description" content="给初学者的天球课：学会在给定时间和地点，算出一颗星在天空中的方向和高度。">
+    <!-- description 是给搜索引擎和链接预览看的一句话，页面上不显示。 -->
+
+    <link rel="stylesheet" href="style.css">
+    <!--
+      把旁边的 style.css 接进来。href 用的是相对路径：
+      不写网址、不写盘符，浏览器就到和 index.html 同一个文件夹里找 style.css。
+      整站以后搬到 GitHub Pages，这条路径也不用改。
+    -->
+
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon.ico" sizes="any">
+    <!--
+      标签页上的小星星。svg 给现代浏览器，ico 给还会自动来要 favicon.ico 的浏览器。
+      两个文件都在网站根目录，相对路径，两页共用。
+    -->
+  </head>
+
+  <body>
+    <!-- body 里面的内容才会被画到页面上。 -->
+
+    <a class="skip-link" href="#main">跳到主要内容</a>
+    <!-- 给用键盘操作的人：按 Tab 时可以跳过页头，直接进入正文。 -->
+
+    <header class="site-header">
+      <!-- header 是页头，放站名和这一页最重要的介绍。 -->
+      <div class="wrap">
+        <!-- wrap 这个 class 在 CSS 里把内容限制成适合阅读的一栏，并且居中。 -->
+
+        <p class="brand">
+          <!--
+            这里的小图是「内联 SVG」：图的代码直接写在 HTML 里，不另存图片文件。
+            它是装饰，所以加了 aria-hidden="true"，朗读软件会跳过它。
+          -->
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path fill="#e6c27a" d="M8 0.8 L9.1 6.4 L15.2 8 L9.1 9.6 L8 15.2 L6.9 9.6 L0.8 8 L6.9 6.4 Z"/>
+          </svg>
+          面向初学者的天文小课
+        </p>
+        <h1>星空坐标学</h1>
+        <!-- 每一页只放一个 h1，表示这页最大的标题。 -->
+
+        <p class="lead">
+          这门课要学会一件具体的事：给定时间和地点，算出一颗星会出现在天空的哪一个方向、离地平线有多高。做法是先把天空看成一个假想的大圆球，再在球面上建立坐标，并把钟表时间换成天空转过的角度。你不需要先学完高等数学；看得懂角度，会做四则运算，就可以从第一课开始。
+        </p>
+      </div>
+    </header>
+
+    <main class="wrap toc-section" id="main">
+      <!-- main 是这一页唯一的主要内容。id 要和上面 skip-link 的 #main 对应。 -->
+
+      <h2>课程目录</h2>
+      <p class="section-lead">六课和三份附录都可以读。建议按顺序来：先把天球和两种坐标认熟，再算时间和升落，最后用计算器核对。</p>
+
+      <!--
+        ol 是有序列表：浏览器知道这是 1、2、3 排下来的步骤。
+        真正的序号我们写在每张卡片里，CSS 会把自动生成的数字藏掉。
+      -->
+      <ol class="toc">
+        <li>
+          <!--
+            href 用相对路径，指向同一文件夹里的 html。整站搬走也不用改。
+          -->
+          <a class="toc-card" href="lesson-01.html">
+            <span class="toc-index">01</span>
+            <span class="toc-body">
+              <span class="toc-title">天球是什么</span>
+              <span class="toc-desc">先在脑海里放一个大圆球，认识天顶、地平、天极、天赤道、黄道和春分点。</span>
+            </span>
+            <span class="toc-status">阅读</span>
+          </a>
+        </li>
+
+        <li>
+          <a class="toc-card" href="lesson-02.html">
+            <span class="toc-index">02</span>
+            <span class="toc-body">
+              <span class="toc-title">地平坐标系</span>
+              <span class="toc-desc">用方位角和高度角，描述「这颗星现在在我的天空里哪里」。</span>
+            </span>
+            <span class="toc-status">阅读</span>
+          </a>
+        </li>
+
+        <li>
+          <a class="toc-card" href="lesson-03.html">
+            <span class="toc-index">03</span>
+            <span class="toc-body">
+              <span class="toc-title">赤道坐标系</span>
+              <span class="toc-desc">用赤经和赤纬，描述星星在天球上不随地点改变的位置。</span>
+            </span>
+            <span class="toc-status">阅读</span>
+          </a>
+        </li>
+
+        <li>
+          <a class="toc-card" href="lesson-04.html">
+            <span class="toc-index">04</span>
+            <span class="toc-body">
+              <span class="toc-title">时间与恒星时</span>
+              <span class="toc-desc">把钟表上的时间，换成天空已经转到了哪一个角度。</span>
+            </span>
+            <span class="toc-status">阅读</span>
+          </a>
+        </li>
+
+        <li>
+          <a class="toc-card" href="lesson-05.html">
+            <span class="toc-index">05</span>
+            <span class="toc-body">
+              <span class="toc-title">坐标转换与升落计算</span>
+              <span class="toc-desc">由赤经、赤纬算出升起、落下和中天的时刻与方位。</span>
+            </span>
+            <span class="toc-status">阅读</span>
+          </a>
+        </li>
+
+        <li>
+          <a class="toc-card" href="lesson-06.html">
+            <span class="toc-index">06</span>
+            <span class="toc-body">
+              <span class="toc-title">星星位置计算器</span>
+              <span class="toc-desc">输入日期、地点和星名，亲手算出它在天空中的位置。</span>
+            </span>
+            <span class="toc-status">计算</span>
+          </a>
+        </li>
+
+        <li>
+          <!-- 附录一张卡片里有三个链接。卡片本身不再包一层 a，否则链接里套链接是无效的 HTML。 -->
+          <div class="toc-card">
+            <span class="toc-index">附</span>
+            <div class="toc-body">
+              <span class="toc-title">附录</span>
+              <span class="toc-desc">不算一课。算题时随手翻，不按课次往下读。</span>
+              <ul class="toc-sub">
+                <li><a href="appendix-glossary.html">术语表</a></li>
+                <li><a href="appendix-stars.html">常用亮星坐标表</a></li>
+                <li><a href="appendix-advanced.html">进阶话题</a></li>
+              </ul>
+            </div>
+          </div>
+        </li>
+      </ol>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>六课从天球讲到能手算升落。计算器用来核对，不代替前面的步骤。</p>
+      </div>
+    </footer>
+  </body>
+</html>

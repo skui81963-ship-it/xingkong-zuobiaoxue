@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<!--
+  lesson-02.html 第二课《地平坐标系》。
+  结构和第一课相同：学习目标，然后五段笔记。
+  样式仍用 style.css。方位和高度的小图由 horizon.js 拖动。
+-->
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>地平坐标系 · 星空坐标学</title>
+    <meta name="description" content="第二课：方位角从正北向东量，高度角从地平线向天顶量。">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon.ico" sizes="any">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要内容</a>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="index.html">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path fill="#e6c27a" d="M8 0.8 L9.1 6.4 L15.2 8 L9.1 9.6 L8 15.2 L6.9 9.6 L0.8 8 L6.9 6.4 Z"/>
+          </svg>
+          星空坐标学
+        </a>
+        <p class="kicker">第二课</p>
+        <h1>地平坐标系</h1>
+      </div>
+    </header>
+
+    <main class="wrap lesson-main" id="main">
+      <p class="goal">
+        <strong>学习目标：</strong>能用方位角和高度角说出一颗星现在在你天空里的位置，并知道这两个数会随时间和地点改变。
+      </p>
+
+      <section class="note">
+        <h2>一句话概括</h2>
+        <p>地平坐标系回答的是「这颗星此刻在我的哪一边、有多高」。方位从正北向东量，高度从地平线向天顶量。</p>
+      </section>
+
+      <section class="note">
+        <h2>核心知识点</h2>
+
+        <h3>这个坐标系钉在你身上</h3>
+        <p>第一课的地平圈、天顶、天底，就是这套坐标的骨架。原点在观测者。地平圈是高度 0° 的那一圈，天顶是高度 +90°，天底是高度 −90°。</p>
+        <p>你转身、走动，或者只是干等着地球自转，同一颗星的地平坐标都会变。所以它适合描述「现在往哪儿看」，不适合写成星表。星表用的是下一课的赤经、赤纬。</p>
+
+        <h3>方位角</h3>
+        <p>方位角沿着地平圈量。本课规定：正北是 0°，向东增加到 90°（正东），180° 是正南，270° 是正西，再转回 360° 又是正北。</p>
+        <p>有的天文书从正南起量、向西增加。那是另一种习惯，和导航罗盘差 180°。本站全部从正北向东量，和指南针一致。看到别的书时，先看它的 0° 在南还是在北。</p>
+
+        <h3>高度角</h3>
+        <p>高度角从地平圈向上量到那颗星。地平线上是 0°，天顶是 +90°。星星落到地平线以下，高度就是负数，最低到天底的 −90°。</p>
+        <p>计算里的地平是和重力垂直的真地平，不是楼和山切出来的那条线。大气还会把贴近地平的星星抬高大约半度，那是后面升落计算里的修正，这一课先用几何高度。</p>
+
+        <figure class="diagram">
+          <div class="diagram-panel">
+            <div class="calc-grid">
+              <div>
+                <div class="lat-top">
+                  <label for="az">方位角</label>
+                  <output id="az-value" for="az">0°</output>
+                </div>
+                <input id="az" type="range" min="0" max="360" step="1" value="0">
+                <svg class="sky-svg" viewBox="0 0 280 280" role="img" aria-label="俯视罗盘，方位角从正北向东量">
+                  <title>方位角罗盘</title>
+                  <circle class="sphere-outline" cx="140" cy="140" r="92"></circle>
+                  <line class="line-upright" x1="140" y1="48" x2="140" y2="232"></line>
+                  <line class="line-upright" x1="48" y1="140" x2="232" y2="140"></line>
+                  <line id="az-ray" class="line-horizon" x1="140" y1="140" x2="140" y2="48"></line>
+                  <circle class="dot-observer" cx="140" cy="140" r="4"></circle>
+                  <circle id="az-dot" class="dot-ncp" cx="140" cy="48" r="5"></circle>
+                  <text class="label-gold" x="140" y="28" text-anchor="middle">北 0°</text>
+                  <text class="label-dim" x="250" y="144" text-anchor="start">东 90°</text>
+                  <text class="label-dim" x="140" y="262" text-anchor="middle">南 180°</text>
+                  <text class="label-dim" x="30" y="144" text-anchor="end">西 270°</text>
+                </svg>
+                <p id="az-readout" class="readout">方位角 0°，正北。从正北起、向东量。</p>
+              </div>
+              <div>
+                <div class="lat-top">
+                  <label for="alt">高度角</label>
+                  <output id="alt-value" for="alt">40°</output>
+                </div>
+                <input id="alt" type="range" min="-90" max="90" step="1" value="40">
+                <svg class="sky-svg" viewBox="0 0 320 230" role="img" aria-label="侧视图，高度角从地平线量到天顶">
+                  <title>高度角</title>
+                  <path class="ground-half" d="M 60 150 L 260 150 L 260 210 L 60 210 Z"></path>
+                  <path class="sky-half" d="M 60 150 A 100 100 0 0 0 260 150 Z"></path>
+                  <line class="line-horizon" x1="40" y1="150" x2="280" y2="150"></line>
+                  <line class="line-upright" x1="160" y1="40" x2="160" y2="150"></line>
+                  <circle id="alt-star" class="dot-ncp" cx="236.6" cy="85.7" r="6"></circle>
+                  <text class="label-dim" x="160" y="28" text-anchor="middle">天顶 +90°</text>
+                  <text class="label-gold" x="160" y="168" text-anchor="middle">地平 0°</text>
+                </svg>
+                <p id="alt-readout" class="readout">高度角 40°，在地平线以上。天顶是 +90°，天底是 −90°。</p>
+              </div>
+            </div>
+            <noscript>
+              <p class="noscript-note">没有 JavaScript 时，图停在方位 0°、高度 40°。拖动需要打开脚本。</p>
+            </noscript>
+          </div>
+          <figcaption>
+            左边是俯视罗盘，东在右边，和地图一样，不是抬头看到的左右。右边只画高度：星星沿圆弧升降，不管它在东边还是西边。北京看北极星，高度大约就是 40°，方位接近正北。
+          </figcaption>
+        </figure>
+
+        <div class="example">
+          <h3>一个可以直接用的例子</h3>
+          <p>站在北京（约北纬 40°），北极星的高度角大约是 40°，方位角大约是 0°。它离北天极还有大约 0.6°，所以高度会在 40° 上下不到 1° 的范围里慢慢转，方位也不会正好钉在正北，但肉眼几乎就当它在正北。</p>
+          <p>正东地平线上刚升起的星星：方位角 90°，高度角 0°。走到天顶的星星：高度角 +90°，方位角反而不好说，因为四面八方都在脚下。</p>
+        </div>
+      </section>
+
+      <section class="note">
+        <h2>有趣的事实</h2>
+        <ul>
+          <li>同一颗星，在北京和在悉尼的方位、高度完全不同。地平坐标属于观测者，不属于星星。</li>
+          <li>高度每增加 1°，大约相当于你伸直手臂时，小指宽度的两倍多一点。粗略找星用这个就够。</li>
+          <li>航海和气象说的方位，多半也是从正北向东量。本课故意跟这个习惯走，后面的计算器也是。</li>
+        </ul>
+      </section>
+
+      <section class="note">
+        <h2>小练习</h2>
+        <p>先自己答，再点开「查看答案」。</p>
+        <ol class="exercises">
+          <li>
+            <p>一颗星的方位角是 270°，高度角是 30°。它在你的哪一边，高不高？</p>
+            <details class="answer">
+              <summary>查看答案</summary>
+              <p>在正西，地平线以上 30°。270° 是从正北向东转过四分之三个圆，正好是西。</p>
+            </details>
+          </li>
+          <li>
+            <p>为什么星表里通常不印「方位角和高度角」？</p>
+            <details class="answer">
+              <summary>查看答案</summary>
+              <p>因为这两个数同时取决于你在哪里、现在是几点。换一个城市或过一小时，数字就变了。星表要印不随地点乱改的坐标，那是赤经和赤纬。</p>
+            </details>
+          </li>
+          <li>
+            <p>一本书写「方位从正南向西量，这颗星的方位是 0°」。改成我们的从正北向东量，是多少度？</p>
+            <details class="answer">
+              <summary>查看答案</summary>
+              <p>180°。从正南量的 0° 就是正南，从正北向东量时正南是 180°。两种习惯差 180°。</p>
+            </details>
+          </li>
+        </ol>
+      </section>
+
+      <section class="note">
+        <h2>参考资料</h2>
+        <ul class="refs">
+          <li>Jean Meeus, <cite>Astronomical Algorithms</cite>，第 12 章。书中方位从正南向西量；改成从正北向东量时，加上 180°。</li>
+          <li>苏宜《天文学新概论》（科学出版社），地平坐标系一节。</li>
+          <li>下一课开始用的星位，记在附录的亮星表里，历元是 J2000.0。</li>
+        </ul>
+      </section>
+
+      <nav class="pager" aria-label="课文前后">
+        <a href="lesson-01.html">上一课<small>天球是什么</small></a>
+        <a href="index.html">返回首页</a>
+        <a href="lesson-03.html">下一课<small>赤道坐标系</small></a>
+      </nav>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>地平坐标会变。下一课的赤经、赤纬，才是星星自己的地址。</p>
+      </div>
+    </footer>
+    <script src="horizon.js"></script>
+  </body>
+</html>

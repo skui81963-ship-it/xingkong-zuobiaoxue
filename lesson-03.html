@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<!--
+  lesson-03.html 第三课《赤道坐标系》。
+  赤经、赤纬钉在天球上，不随你站的地方转动。星表用的就是这套。
+-->
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>赤道坐标系 · 星空坐标学</title>
+    <meta name="description" content="第三课：赤经从春分点向东量，赤纬从天赤道向南北量。它们是星星在星表里的地址。">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon.ico" sizes="any">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要内容</a>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="index.html">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path fill="#e6c27a" d="M8 0.8 L9.1 6.4 L15.2 8 L9.1 9.6 L8 15.2 L6.9 9.6 L0.8 8 L6.9 6.4 Z"/>
+          </svg>
+          星空坐标学
+        </a>
+        <p class="kicker">第三课</p>
+        <h1>赤道坐标系</h1>
+      </div>
+    </header>
+
+    <main class="wrap lesson-main" id="main">
+      <p class="goal">
+        <strong>学习目标：</strong>能读懂星表上的赤经和赤纬，会把赤经的时分秒换成度，并说清它为什么不像方位角那样每小时都变。
+      </p>
+
+      <section class="note">
+        <h2>一句话概括</h2>
+        <p>赤经和赤纬是星星在天球上的固定地址：赤经从春分点沿天赤道向东量，赤纬从天赤道向北或向南量。</p>
+      </section>
+
+      <section class="note">
+        <h2>核心知识点</h2>
+
+        <h3>格子画在天球上</h3>
+        <p>地平坐标的格子跟着你的地平和天顶走。赤道坐标的格子跟着天赤道和天极走，也就是跟着地球的自转轴走。地球一转，整张格子和星星一起转，所以一颗恒星的赤经、赤纬看起来不动。</p>
+        <p>严格说，岁差会让这个地址每一年慢慢挪一点。星表因此要写明历元。本课和附录的表都用 J2000.0，也就是 2000 年 1 月 1 日 12 时那套春分点和天赤道。零点几度的差别留到附录再说。对学计算来说，先把一颗星当成一个固定的赤经、赤纬。</p>
+
+        <h3>赤纬</h3>
+        <p>赤纬从天赤道量起，向北为正，向南为负，范围是 −90° 到 +90°。天赤道上的星星赤纬是 0°。北天极是 +90°，南天极是 −90°。</p>
+        <p>它和地理纬度很像：纬度告诉你在地球赤道以北或以南多少度，赤纬告诉你在天赤道以北或以南多少度。</p>
+
+        <h3>赤经</h3>
+        <p>赤经从春分点起，沿天赤道向东量，一圈是 24 时，不是 360° 直接写在星表上。规定是：</p>
+        <p class="formula">1 时 = 15°，1 时分 = 15′，1 时秒 = 15″。</p>
+        <p>用「时」是因为天空大约每小时转过 1 时的赤经。星星什么时候中天，和它的赤经、以及当时的恒星时，差一个减法。那是第四课的事。</p>
+        <p>向东，是天空周日运动的反方向。星星每天从东边升起，赤经却向东增加。所以赤经大的星星，要更晚才转到子午圈上。</p>
+
+        <figure class="diagram">
+          <div class="diagram-panel">
+            <svg class="sky-svg" viewBox="0 0 480 300" role="img" aria-label="天赤道是横线，春分点在左侧，织女星画在赤纬大约正 39 度的地方">
+              <title>赤经和赤纬</title>
+              <line class="line-equator" x1="40" y1="170" x2="440" y2="170"></line>
+              <line class="line-upright" x1="70" y1="40" x2="70" y2="250"></line>
+              <circle class="dot-node" cx="70" cy="170" r="5"></circle>
+              <circle class="dot-ncp" cx="330" cy="78" r="6"></circle>
+              <line class="line-axis" x1="330" y1="170" x2="330" y2="78"></line>
+              <text class="label-dim" x="70" y="28" text-anchor="middle">春分点</text>
+              <text class="label-gold" x="250" y="196" text-anchor="middle">赤经向东 →</text>
+              <text class="label-dim" x="300" y="278" text-anchor="middle">天赤道，赤纬 0°</text>
+              <text x="348" y="74" text-anchor="start">织女</text>
+              <text class="label-gold" x="348" y="128" text-anchor="start">赤纬约 +39°</text>
+            </svg>
+          </div>
+          <figcaption>
+            这是把天赤道拉直的示意图，不是某一时刻的天空。春分点是赤经 0 时。织女在春分点以东大约 18.6 时，天赤道以北大约 39°。
+          </figcaption>
+        </figure>
+
+        <h3>和地平坐标比一比</h3>
+        <ul>
+          <li>地平坐标回答「现在往哪儿看」，随时间和地点变。</li>
+          <li>赤道坐标回答「这是星表上的哪一颗」，恒星可以先当成固定。</li>
+          <li>要把星表地址变成抬头的方向，还缺两样东西：你的纬度和这颗星此刻的时角。时角由地方恒星时减赤经得到。</li>
+        </ul>
+
+        <div class="example">
+          <h3>把织女的赤经换成度</h3>
+          <p>附录里织女（α Lyr）的 J2000 赤经是 18 时 36 分 56.336 秒，赤纬是 +38° 47′ 01.28″。</p>
+          <ol>
+            <li>先把分、秒收成小时的小数：36 分 = 36/60 = 0.6 时；56.336 秒 = 56.336/3600 = 0.015649 时。</li>
+            <li>赤经 = 18 + 0.6 + 0.015649 = 18.615649 时。</li>
+            <li>换成度：18.615649 × 15 = 279.2347°。</li>
+            <li>赤纬 = 38 + 47/60 + 1.28/3600 = 38 + 0.783333 + 0.000356 = +38.7837°。</li>
+          </ol>
+          <p>后面两课都用这一对数字：赤经 279.2347°，赤纬 +38.7837°。天狼星在天赤道以南，赤纬大约是 −16.72°，所以它在北京的中天比织女低得多。</p>
+        </div>
+      </section>
+
+      <section class="note">
+        <h2>有趣的事实</h2>
+        <ul>
+          <li>北极星的赤纬大约是 +89.26°（J2000）。它离北天极只有大约 0.74°，所以几乎不参与东升西落。2026 年岁差又让它更近了一点，大约 0.6°。</li>
+          <li>赤经 0 时并不在某一颗亮星上。它是春分点，现在位于双鱼座，附近没有一颗特别亮的「0 时星」。</li>
+          <li>同一赤纬的星星，在你这里的中天高度都一样。赤纬决定有多高，赤经决定什么时候到正南方或正北方。</li>
+        </ul>
+      </section>
+
+      <section class="note">
+        <h2>小练习</h2>
+        <p>先自己答，再点开「查看答案」。</p>
+        <ol class="exercises">
+          <li>
+            <p>一颗星的赤经是 6 时整。把它换成度。</p>
+            <details class="answer">
+              <summary>查看答案</summary>
+              <p>6 × 15° = 90°。天狼星的赤经大约是 6 时 45 分，比 90° 再多 45 × 15′ = 11.25°，大约 101.3°。</p>
+            </details>
+          </li>
+          <li>
+            <p>赤纬 −16° 的星星，在天赤道的南边还是北边？它会因为你从北京飞到上海就改变赤纬吗？</p>
+            <details class="answer">
+              <summary>查看答案</summary>
+              <p>在天赤道南边。赤纬是星星自己的坐标，不随观测地点改变。变的是它的方位角和高度角。</p>
+            </details>
+          </li>
+          <li>
+            <p>为什么星表要写 J2000，而不是只写「赤经、赤纬」？</p>
+            <details class="answer">
+              <summary>查看答案</summary>
+              <p>春分点和天赤道会因岁差缓慢移动。不写历元，后人不知道这组数字对准的是哪一年的坐标网。本站的表对准 2000.0。</p>
+            </details>
+          </li>
+        </ol>
+      </section>
+
+      <section class="note">
+        <h2>参考资料</h2>
+        <ul class="refs">
+          <li>附录《常用亮星坐标表》。赤经、赤纬都是 J2000.0，和第六课下拉菜单里的星是同一批。</li>
+          <li>Jean Meeus, <cite>Astronomical Algorithms</cite>，坐标定义和第 12 章的换算。</li>
+          <li>苏宜《天文学新概论》，赤道坐标系一节。</li>
+        </ul>
+      </section>
+
+      <nav class="pager" aria-label="课文前后">
+        <a href="lesson-02.html">上一课<small>地平坐标系</small></a>
+        <a href="index.html">返回首页</a>
+        <a href="lesson-04.html">下一课<small>时间与恒星时</small></a>
+      </nav>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>地址有了。下一课把钟点换成「此刻哪一条赤经正经过子午圈」。</p>
+      </div>
+    </footer>
+  </body>
+</html>
