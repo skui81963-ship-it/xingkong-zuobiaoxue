@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<!--
+  appendix-stars.html
+  二十颗亮星的 J2000.0 坐标，和 calculator.js 里的 STARS 是同一批数字。
+  赤经、赤纬取自 ICRS（和国际天球参考系在 J2000 几乎重合），四舍五入到 0.001 时秒和 0.01 角秒。
+-->
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>常用亮星坐标表 · 星空坐标学</title>
+    <meta name="description" content="二十颗亮星的 J2000 赤经和赤纬，供手算和第六课计算器使用。">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon.ico" sizes="any">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要内容</a>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="index.html">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path fill="#e6c27a" d="M8 0.8 L9.1 6.4 L15.2 8 L9.1 9.6 L8 15.2 L6.9 9.6 L0.8 8 L6.9 6.4 Z"/>
+          </svg>
+          星空坐标学
+        </a>
+        <p class="kicker">附录</p>
+        <h1>常用亮星坐标表</h1>
+      </div>
+    </header>
+    <main class="wrap lesson-main" id="main">
+      <p class="goal"><strong>历元：</strong>J2000.0。表中赤经换成度时乘 15。南纬的赤纬在计算里要加负号。</p>
+
+      <section class="note">
+        <h2>一句话概括</h2>
+        <p>这 20 颗星的赤经、赤纬可以当成固定地址来做本课的练习；它们不是行星的位置。</p>
+      </section>
+
+      <section class="note">
+        <h2>核心知识点</h2>
+        <p>星等是目视星等，只帮助你知道好不好找，不参加坐标计算。多星系统的星等是肉眼看到的合光。参宿四、大角等会略微变光，星等只取常见值。</p>
+        <p>赤经的「时」和钟点不是同一件事，但 1 时赤经 = 15°。最后两列是已经换好的小数，方便直接代进第五课的公式。</p>
+        <!-- table 是表格。th 是表头，td 是一格数据。外层 div 让手机可以横滑。 -->
+        <div class="table-wrap">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>中文名</th>
+                <th>拜耳名</th>
+                <th>星等</th>
+                <th>赤经 J2000</th>
+                <th>赤纬 J2000</th>
+                <th>赤经（时）</th>
+                <th>赤纬（度）</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>天狼</td><td>α CMa</td><td>−1.46</td><td>06h 45m 08.917s</td><td>−16° 42′ 58.02″</td><td>6.752477</td><td>−16.71612</td></tr>
+              <tr><td>老人</td><td>α Car</td><td>−0.74</td><td>06h 23m 57.110s</td><td>−52° 41′ 44.38″</td><td>6.399197</td><td>−52.69566</td></tr>
+              <tr><td>南门二</td><td>α Cen</td><td>−0.27</td><td>14h 39m 36.494s</td><td>−60° 50′ 02.37″</td><td>14.660137</td><td>−60.83399</td></tr>
+              <tr><td>大角</td><td>α Boo</td><td>−0.05</td><td>14h 15m 39.672s</td><td>+19° 10′ 56.67″</td><td>14.261020</td><td>+19.18241</td></tr>
+              <tr><td>织女</td><td>α Lyr</td><td>0.03</td><td>18h 36m 56.336s</td><td>+38° 47′ 01.28″</td><td>18.615649</td><td>+38.78369</td></tr>
+              <tr><td>五车二</td><td>α Aur</td><td>0.08</td><td>05h 16m 41.359s</td><td>+45° 59′ 52.77″</td><td>5.278155</td><td>+45.99799</td></tr>
+              <tr><td>参宿七</td><td>β Ori</td><td>0.13</td><td>05h 14m 32.272s</td><td>−08° 12′ 05.90″</td><td>5.242298</td><td>−8.20164</td></tr>
+              <tr><td>南河三</td><td>α CMi</td><td>0.34</td><td>07h 39m 18.119s</td><td>+05° 13′ 29.96″</td><td>7.655033</td><td>+5.22499</td></tr>
+              <tr><td>参宿四</td><td>α Ori</td><td>0.50</td><td>05h 55m 10.305s</td><td>+07° 24′ 25.43″</td><td>5.919529</td><td>+7.40706</td></tr>
+              <tr><td>水委一</td><td>α Eri</td><td>0.46</td><td>01h 37m 42.845s</td><td>−57° 14′ 12.31″</td><td>1.628568</td><td>−57.23675</td></tr>
+              <tr><td>马腹一</td><td>β Cen</td><td>0.61</td><td>14h 03m 49.405s</td><td>−60° 22′ 22.93″</td><td>14.063724</td><td>−60.37304</td></tr>
+              <tr><td>河鼓二</td><td>α Aql</td><td>0.76</td><td>19h 50m 46.999s</td><td>+08° 52′ 05.96″</td><td>19.846389</td><td>+8.86832</td></tr>
+              <tr><td>毕宿五</td><td>α Tau</td><td>0.85</td><td>04h 35m 55.239s</td><td>+16° 30′ 33.49″</td><td>4.598678</td><td>+16.50930</td></tr>
+              <tr><td>角宿一</td><td>α Vir</td><td>0.97</td><td>13h 25m 11.579s</td><td>−11° 09′ 40.75″</td><td>13.419883</td><td>−11.16132</td></tr>
+              <tr><td>心宿二</td><td>α Sco</td><td>1.06</td><td>16h 29m 24.460s</td><td>−26° 25′ 55.21″</td><td>16.490128</td><td>−26.43200</td></tr>
+              <tr><td>北河三</td><td>β Gem</td><td>1.14</td><td>07h 45m 18.950s</td><td>+28° 01′ 34.32″</td><td>7.755264</td><td>+28.02620</td></tr>
+              <tr><td>北落师门</td><td>α PsA</td><td>1.16</td><td>22h 57m 39.046s</td><td>−29° 37′ 20.05″</td><td>22.960846</td><td>−29.62224</td></tr>
+              <tr><td>天津四</td><td>α Cyg</td><td>1.25</td><td>20h 41m 25.915s</td><td>+45° 16′ 49.22″</td><td>20.690532</td><td>+45.28034</td></tr>
+              <tr><td>轩辕十四</td><td>α Leo</td><td>1.36</td><td>10h 08m 22.311s</td><td>+11° 58′ 01.95″</td><td>10.139531</td><td>+11.96721</td></tr>
+              <tr><td>北极星</td><td>α UMi</td><td>1.98</td><td>02h 31m 49.095s</td><td>+89° 15′ 50.79″</td><td>2.530304</td><td>+89.26411</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>河鼓二就是牛郎星。织女、河鼓二、天津四组成夏季大三角。参宿四和参宿七在猎户座。小数由时分秒换算而来，和第六课内部用的值一致，末位四舍五入到上表的位数。</p>
+      </section>
+
+      <section class="note">
+        <h2>有趣的事实</h2>
+        <ul>
+          <li>天狼是全天最亮的恒星，赤纬大约 −16.7°。在北京它会升起，中天高度大约 33°。</li>
+          <li>老人（老人星）和水委一的赤纬都在 −50° 以南，北纬 40° 的地方看不见它们。</li>
+          <li>北极星的赤纬不是 +90°。J2000 时它离北天极大约 0.74°，所以高度会绕着你的纬度画一个很小的圈。</li>
+        </ul>
+      </section>
+
+      <section class="note">
+        <h2>小练习</h2>
+        <ol class="exercises">
+          <li>
+            <p>用表把天狼的赤经 6.752477 时换成度，保留一位小数。</p>
+            <details class="answer">
+              <summary>查看答案</summary>
+              <p>6.752477 × 15 = 101.287°，大约 101.3°。</p>
+            </details>
+          </li>
+          <li>
+            <p>北纬 40° 的人，表里哪些星显然是拱极星？只看赤纬。</p>
+            <details class="answer">
+              <summary>查看答案</summary>
+              <p>赤纬要大于约 +50°。这 20 颗里只有北极星（+89.26°）满足。天津四 +45.3°、五车二 +46.0° 还差一点，会落下，但落下的时间很短。</p>
+            </details>
+          </li>
+        </ol>
+      </section>
+
+      <section class="note">
+        <h2>参考资料</h2>
+        <ul class="refs">
+          <li>坐标取自 J2000.0 / ICRS 的亮星位置，四舍五入到表上的位数。织女、天狼、北极星与 SIMBAD 的 ICRS 坐标一致到 0.001 时秒、0.01 角秒。</li>
+          <li>第六课下拉菜单使用同一组时、分、秒，避免手算和网页各用一套数。</li>
+        </ul>
+      </section>
+
+      <nav class="pager" aria-label="课文前后">
+        <a href="appendix-glossary.html">上一页<small>术语表</small></a>
+        <a href="index.html">返回首页</a>
+        <a href="appendix-advanced.html">下一页<small>进阶话题</small></a>
+      </nav>
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>坐标是 2000 年的。下一页说明为什么不能把它们直接当成今晚的精密位置，也不能拿去算行星。</p>
+      </div>
+    </footer>
+  </body>
+</html>

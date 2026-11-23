@@ -1,0 +1,912 @@
+/*
+  style.css
+  ---------
+  全站的外观都写在这一个文件里。index.html 和 lesson-01.html
+  都用 <link> 把它引进来，所以两页的字体、颜色、间距是同一套。
+
+  想改「看起来怎么样」，改这里；想改「写了什么字」，改 HTML。
+
+  阅读顺序：
+  1. 颜色和字体的名字（:root）
+  2. 全页通用的底子
+  3. 标题、段落、链接
+  4. 首页的课程目录
+  5. 课文里的笔记、图、滑块
+  6. 表格、计算器和术语表
+  7. 窄屏幕时的调整（文件最下面）
+*/
+
+/* ---------- 1. 给颜色和字体起名字 ---------- */
+
+/*
+  :root 表示整份文档的根（也就是 <html>）。
+  以 -- 开头的叫自定义属性，可以当成「这个网站自己的变量」。
+  后面写成 color: var(--ink); 就是在用这里的名字。
+  以后想换配色，优先改这一块。
+*/
+/*
+  color-scheme 告诉浏览器：这个网站是深色的。
+  滚动条、详情箭头这些浏览器自带的小零件就会用深色，而不是一块刺眼的白。
+*/
+html {
+  color-scheme: dark;
+}
+
+:root {
+  --sky: #0b1020;          /* 页面底色：深夜的蓝黑 */
+  --sky-raised: #141a2e;   /* 比底色略亮一点，用来托住卡片 */
+  --ink: #f4f0e6;          /* 正文：暖白色，比纯白柔和 */
+  --muted: #c9c2b3;        /* 次要说明，仍然要在深色底上看得清 */
+  --gold: #e6c27a;         /* 强调色：像星光的淡金 */
+  --gold-strong: #f3d7a1;
+  --rose: #f0a8c4;         /* 图里的天轴 */
+  --teal: #8fd0c6;         /* 图里的天赤道 */
+  --line: rgba(244, 240, 230, 0.16);
+  --font: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Noto Sans CJK SC",
+    "Source Han Sans SC", "Microsoft YaHei", "WenQuanYi Micro Hei", "Heiti SC",
+    sans-serif;
+}
+
+/* ---------- 2. 全页通用 ---------- */
+
+/*
+  宽度的算法改成「含内边距和边框」。
+  不然一个写了 width: 100% 又加了 padding 的盒子，会比屏幕更宽，出现横向滚动条。
+  * 表示所有元素；::before / ::after 是元素上用 CSS 额外画出的两层。
+*/
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/*
+  body 是整页看得见的内容。
+  margin: 0 去掉浏览器自带的白边。
+  背景是夜空：一层深蓝，上面用几个很小的径向渐变当星星。
+  radial-gradient 从中心往外变色；这里中心是一个亮点，马上变成透明，看起来就是一颗星。
+  最后一层大椭圆是天顶附近稍微亮一点的天光。这些都是 CSS 画的，不是图片。
+*/
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 1.125rem;
+  line-height: 1.85;
+  background-color: var(--sky);
+  background-image:
+    radial-gradient(1.6px 1.6px at 12% 18%, rgba(255, 252, 240, 0.9), transparent),
+    radial-gradient(1.2px 1.2px at 28% 62%, rgba(255, 255, 255, 0.45), transparent),
+    radial-gradient(1.8px 1.8px at 72% 14%, rgba(243, 215, 161, 0.85), transparent),
+    radial-gradient(1px 1px at 84% 48%, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1.4px 1.4px at 58% 78%, rgba(255, 255, 255, 0.35), transparent),
+    radial-gradient(1.2px 1.2px at 90% 82%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(ellipse 90% 45% at 50% -8%, rgba(78, 104, 168, 0.38), transparent);
+}
+
+/*
+  用鼠标拖选文字时的颜色。深色页面如果沿用浏览器默认的蓝底，会有点刺眼。
+*/
+::selection {
+  background: #3c4d7a;
+  color: #fffaf1;
+}
+
+/*
+  键盘用户按 Tab 时，给当前焦点一个清楚的金边。
+  :focus-visible 表示「这个焦点是键盘造成的」，鼠标点击按钮时不必总是套一个方框。
+*/
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/*
+  跳到正文的链接。平时把它移到屏幕上方外面（top 为负）。
+  一旦被 Tab 选中，:focus 把它拉回屏幕内。鼠标用户几乎看不到它。
+*/
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 5;
+  padding: 0.35rem 0.7rem;
+  background: var(--gold);
+  color: #241c0e;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: 0.75rem;
+}
+
+/*
+  正文栏。min() 取两个值里更小的那个：
+  宽屏幕时最多 46rem（大约 700 多像素），阅读时不用把眼睛从左扫到右；
+  窄屏幕时用「整屏减去左右各 1.25rem」。
+  margin-inline 是左右外边距的简写；auto 会把剩下的空间平分到两边，栏目就居中了。
+*/
+.wrap {
+  width: min(46rem, calc(100% - 2.5rem));
+  margin-inline: auto;
+}
+
+/* ---------- 3. 文字 ---------- */
+
+/*
+  页头。padding 是内边距，四个数按上、右、下、左。
+  border-bottom 是底边的一条细线，用来和正文分开。
+*/
+.site-header {
+  padding: 2.4rem 0 1.6rem;
+  border-bottom: 1px solid var(--line);
+}
+
+/*
+  站名链接。课文页的站名点一下回首页。
+  text-decoration: none 去掉链接默认的下划线；颜色继承正文，避免站名变成金色长句。
+*/
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.98rem;
+  letter-spacing: 0.08em;
+}
+
+.brand svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  display: block;
+}
+
+/* 课次这种小标签：字小一点，颜色用金色，和下方大标题拉开层次。 */
+.kicker {
+  margin: 0.85rem 0 0;
+  color: var(--gold);
+  font-size: 0.92rem;
+  letter-spacing: 0.14em;
+}
+
+h1 {
+  margin: 0.35rem 0 0;
+  font-size: 2.35rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.06em;
+}
+
+/*
+  首页标题下的那一段介绍。字号保持好读，颜色稍淡，和标题区分开。
+  max-width 再收一收，避免这一段在宽屏上拉得太长。
+*/
+.lead {
+  margin: 1rem 0 0;
+  max-width: 40rem;
+  color: var(--muted);
+  font-size: 1.08rem;
+}
+
+h2 {
+  margin: 0 0 0.9rem;
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+}
+
+p {
+  margin: 0.8rem 0;
+}
+
+/*
+  正文里的链接：金色、下划线离开文字一点点，方便认出「这里可以点」。
+  目录卡片和站名是整块可点的，在它们自己的规则里再把下划线去掉。
+*/
+a {
+  color: var(--gold-strong);
+  text-underline-offset: 0.18em;
+}
+
+strong {
+  font-weight: 600;
+}
+
+/* ---------- 4. 首页课程目录 ---------- */
+
+.toc-section {
+  padding: 2rem 0 3rem;
+}
+
+.section-lead {
+  margin-top: 0;
+  color: var(--muted);
+}
+
+/*
+  目录是有序列表 <ol>。浏览器会自动加 1、2、3，
+  但我们想自己排版编号，所以用 list-style: none 去掉默认数字，
+  padding 和 margin 也清掉，间距改由每张卡片的 margin 负责。
+*/
+.toc {
+  list-style: none;
+  margin: 1.25rem 0 0;
+  padding: 0;
+}
+
+.toc > li + li {
+  margin-top: 0.75rem;
+}
+
+/*
+  一张目录卡片。display: flex 让编号、文字、状态徽章排成一行。
+  align-items: flex-start 让它们顶部对齐（文字有两行时，徽章不会跑到正中间显得飘）。
+  gap 是子项之间的空隙。
+*/
+.toc-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  padding: 0.95rem 1rem;
+  background: var(--sky-raised);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 只有真正的链接卡片才变化。即将推出的项是 <div>，点不了，也不伪装成能点。 */
+a.toc-card:hover {
+  border-color: rgba(230, 194, 122, 0.7);
+  background: #1a223c;
+}
+
+a.toc-card:hover .toc-status {
+  color: var(--gold-strong);
+}
+
+.toc-index {
+  flex: 0 0 auto;
+  min-width: 1.8rem;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.toc-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.toc-title {
+  display: block;
+  font-size: 1.12rem;
+  line-height: 1.45;
+}
+
+.toc-desc {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 1.6;
+}
+
+/* 附录里的三个小项。 */
+.toc-sub {
+  margin: 0.45rem 0 0;
+  padding-left: 1.15rem;
+  color: var(--muted);
+  font-size: 0.98rem;
+}
+
+.toc-sub li + li {
+  margin-top: 0.15rem;
+}
+
+.toc-status {
+  flex: 0 0 auto;
+  color: var(--gold);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+/*
+  「即将推出」小徽章。
+  inline-block 让它既能设内边距，又还待在一行里。
+  border-radius 很大时，两边会变成半圆，看起来像一粒胶囊。
+*/
+.badge {
+  display: inline-block;
+  flex: 0 0 auto;
+  margin-top: 0.15rem;
+  padding: 0.12rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+/* 还没写的课，整张卡片淡一点，但文字对比度仍然够读。 */
+.is-soon {
+  background: transparent;
+}
+
+.is-soon .toc-title,
+.is-soon .toc-index {
+  color: var(--muted);
+}
+
+/* ---------- 5. 课文 ---------- */
+
+.lesson-main {
+  padding-bottom: 3rem;
+}
+
+/* 学习目标：每一课开头的提示框，不属于后面那五段固定笔记。 */
+.goal {
+  margin: 1.5rem 0 0;
+  padding: 0.85rem 1rem;
+  background: rgba(230, 194, 122, 0.07);
+  border: 1px solid rgba(230, 194, 122, 0.45);
+  border-radius: 12px;
+}
+
+.goal strong {
+  color: var(--gold-strong);
+  font-weight: 600;
+}
+
+/*
+  五段笔记共用的外壳：一句话概括、核心知识点、有趣的事实、小练习、参考资料。
+  以后新课只要照这五个 <section class="note"> 写，外观就会一样。
+*/
+.note {
+  margin-top: 2.5rem;
+}
+
+.note h2 {
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.note h3 {
+  margin: 1.7rem 0 0.45rem;
+  color: var(--gold-strong);
+  font-size: 1.12rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.note ul,
+.note ol {
+  margin: 0.6rem 0;
+  padding-left: 1.35rem;
+}
+
+.note li + li {
+  margin-top: 0.4rem;
+}
+
+/* 必须记住的那一句，左边加一条金色线，方便以后回翻。 */
+.key {
+  margin: 1rem 0;
+  padding: 0.55rem 0 0.55rem 0.9rem;
+  background: rgba(230, 194, 122, 0.06);
+  border-left: 3px solid var(--gold);
+}
+
+/* 图和控件的外框。 */
+.diagram {
+  margin: 1.3rem 0 0.4rem;
+}
+
+.diagram-panel {
+  padding: 0.9rem 0.9rem 1rem;
+  background: rgba(8, 12, 24, 0.55);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+
+/*
+  figcaption 是图注，跟在图的下面。字小一号、颜色淡一点，表示它是在解释图，不是新的一节。
+*/
+figcaption {
+  margin-top: 0.7rem;
+  color: var(--muted);
+  font-size: 0.98rem;
+  line-height: 1.7;
+}
+
+/* 纬度滑块那一行：左边是说明，右边是当前度数。space-between 把它们推到两端。 */
+.lat-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.lat-top label {
+  font-size: 1rem;
+}
+
+/*
+  output 用来显示计算结果。浏览器给它的默认样式不统一，这里改成和正文一样的字体，并用金色突出度数。
+*/
+output {
+  color: var(--gold-strong);
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+  滑块。不同浏览器的默认滑块长得很不一样，所以先用 appearance: none 清掉默认样子，再自己画轨道和圆钮。
+  下面两组 ::-webkit- 和 ::-moz- 是同一件事的两种写法：Safari / Chrome 用前者，Firefox 用后者。
+*/
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 2px;
+  margin: 0.9rem 0 0.35rem;
+  background: rgba(244, 240, 230, 0.28);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #0b1020;
+  border-radius: 50%;
+  background: var(--gold);
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #0b1020;
+  border-radius: 50%;
+  background: var(--gold);
+  cursor: pointer;
+}
+
+/* 几个地点按钮。flex-wrap: wrap 表示一行放不下时自动换到下一行，手机上不会挤出屏幕。 */
+.presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+}
+
+.presets button {
+  margin: 0;
+  padding: 0.38rem 0.75rem;
+  border: 1px solid rgba(230, 194, 122, 0.45);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.presets button[aria-pressed="true"] {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #241c0e;
+}
+
+/* 滑块下方那句随纬度变化的说明。aria-live 在 HTML 里，样式上只负责让它好读。 */
+.readout {
+  min-height: 4.6em;
+  margin: 0.85rem 0 0.2rem;
+  color: var(--ink);
+}
+
+/*
+  图例：说明每种线是什么。
+  小色块是 span，真正的颜色写在 .swatch-* 上，HTML 里不再夹带样式。
+*/
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 1rem;
+  margin: 0.7rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.swatch {
+  width: 1.1rem;
+  height: 0;
+  border-top-width: 3px;
+  border-top-style: solid;
+}
+
+.swatch-horizon { border-top-color: var(--gold); }
+.swatch-axis { border-top-color: var(--rose); }
+.swatch-equator { border-top-color: var(--teal); border-top-style: dashed; }
+.swatch-upright { border-top-color: rgba(183, 199, 239, 0.85); }
+
+/* 内嵌 SVG。width: 100% 让它跟栏目一样宽；height: auto 按 viewBox 的比例缩放，不变形。 */
+.sky-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 0.4rem;
+}
+
+.sky-svg text {
+  fill: var(--ink);
+  font-family: var(--font);
+  font-size: 15px;
+  /* y 坐标对准字的正中，而不是字母底部。这样标签会以计算出来的点为中心。 */
+  dominant-baseline: central;
+}
+
+.sky-svg .label-dim {
+  fill: var(--muted);
+  font-size: 14px;
+}
+
+.sky-svg .label-gold {
+  fill: var(--gold-strong);
+  font-size: 14px;
+}
+
+.sphere-outline {
+  fill: none;
+  stroke: #c9d4f2;
+  stroke-width: 1.5;
+}
+
+.sky-half {
+  fill: rgba(92, 124, 186, 0.16);
+}
+
+.ground-half {
+  fill: rgba(58, 46, 32, 0.38);
+}
+
+.line-horizon {
+  stroke: var(--gold);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+.line-axis {
+  stroke: var(--rose);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.line-equator {
+  stroke: var(--teal);
+  stroke-width: 2;
+  stroke-dasharray: 7 5;
+  stroke-linecap: round;
+}
+
+.line-upright {
+  stroke: rgba(183, 199, 239, 0.75);
+  stroke-width: 1.4;
+  stroke-dasharray: 2 5;
+}
+
+.line-ecliptic {
+  stroke: var(--gold);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+.lat-arc {
+  fill: none;
+  stroke: var(--gold-strong);
+  stroke-width: 1.8;
+}
+
+.dot-observer {
+  fill: var(--gold);
+}
+
+.dot-ncp {
+  fill: var(--rose);
+}
+
+.dot-scp {
+  fill: #9eb6e8;
+}
+
+.dot-node {
+  fill: var(--gold-strong);
+}
+
+/* 没有 JavaScript 时才显示。有脚本时浏览器会忽略 <noscript> 里的内容。 */
+.noscript-note {
+  margin: 0.6rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* 小练习的答案。details 自带展开/收起，summary 是始终能看见的那一行。 */
+.exercises {
+  margin-top: 0.4rem;
+  padding-left: 1.3rem;
+}
+
+.exercises > li + li {
+  margin-top: 1rem;
+}
+
+.answer {
+  margin-top: 0.35rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 10px;
+  background: rgba(244, 240, 230, 0.04);
+}
+
+.answer summary {
+  cursor: pointer;
+  color: var(--gold-strong);
+  font-size: 0.98rem;
+}
+
+.answer p {
+  margin: 0.4rem 0 0.25rem;
+}
+
+.refs li + li {
+  margin-top: 0.55rem;
+}
+
+/*
+  课与课之间的导航。三格：上一课、回首页、下一课。
+  第一课没有上一课，下一课还没写，那两格用 <span> 而不是 <a>，这样它们不是链接。
+*/
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 2.6rem;
+}
+
+.pager a,
+.pager span {
+  flex: 1 1 9.5rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  text-align: center;
+  text-decoration: none;
+  line-height: 1.45;
+}
+
+.pager a {
+  color: var(--ink);
+  background: var(--sky-raised);
+}
+
+.pager a:hover {
+  border-color: rgba(230, 194, 122, 0.7);
+}
+
+.pager .is-disabled {
+  color: var(--muted);
+  border-style: dashed;
+}
+
+.pager small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+/* 页脚。字小、颜色淡，和正文分开。 */
+.site-footer {
+  padding: 0 0 2.4rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.site-footer p {
+  margin: 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+/* ---------- 6. 表格、表单、计算器 ---------- */
+
+/*
+  宽表格在手机上允许横向滑动，而不是把整页撑出屏幕。
+  overflow-x: auto 的意思是：太宽时才出现横向滚动条。
+*/
+.table-wrap {
+  overflow-x: auto;
+  margin: 0.8rem 0 1rem;
+}
+
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+
+table.data th,
+table.data td {
+  padding: 0.4rem 0.45rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
+}
+
+table.data th {
+  color: var(--gold-strong);
+  font-weight: 600;
+}
+
+/* 手算例子的盒子，和正文分开，方便来回对照。 */
+.example {
+  margin: 1rem 0;
+  padding: 0.2rem 1rem 0.8rem;
+  background: rgba(8, 12, 24, 0.55);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.example h3 {
+  margin-top: 0.9rem;
+}
+
+/* 单独摆出来的公式。tabular-nums 让数字上下对齐，方便看位数。 */
+.formula {
+  margin: 0.7rem 0;
+  padding: 0.45rem 0.75rem;
+  background: rgba(230, 194, 122, 0.08);
+  border-radius: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 第六课的输入区。grid 是格子布局：两列，格子之间留缝。 */
+.calc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1rem;
+}
+
+/*
+  hidden 是 HTML 自带的「先别显示」。
+  上面的 display: grid 和浏览器对 hidden 的 display: none 特异性一样，
+  后写的格子布局会赢，于是「自己输入坐标」那一块藏不住。
+  这里再写一条，让带 hidden 的格子真正消失。
+*/
+.calc-grid[hidden] {
+  display: none;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.98rem;
+}
+
+.field-wide {
+  grid-column: 1 / -1;
+}
+
+/*
+  输入框和下拉菜单。继承正文的字体，背景用更深的夜色，
+  避免浏览器默认的白底在这个深色页面上扎眼。
+*/
+input:not([type="range"]),
+select {
+  width: 100%;
+  margin: 0;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #0e1428;
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.4;
+}
+
+.calc-report {
+  margin-top: 0.4rem;
+}
+
+.calc-headline {
+  margin: 0.2rem 0 0.6rem;
+  font-size: 1.12rem;
+}
+
+.calc-step {
+  margin-top: 0.7rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--line);
+}
+
+.calc-step h3 {
+  margin: 0 0 0.25rem;
+  color: var(--gold-strong);
+  font-size: 1.02rem;
+}
+
+.calc-step p {
+  margin: 0.2rem 0;
+}
+
+.calc-note {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* 术语表。dt 是词，dd 是解释。 */
+.glossary dt {
+  margin-top: 0.95rem;
+  color: var(--gold-strong);
+  font-weight: 600;
+}
+
+.glossary dd {
+  margin: 0.1rem 0 0;
+}
+
+/* ---------- 7. 窄屏幕 ---------- */
+
+/*
+  媒体查询：只有当屏幕宽度不超过 640px 时，才启用下面的规则。
+  手机上大标题缩小，页边再收一点，目录卡片允许状态徽章换行。
+*/
+@media (max-width: 640px) {
+  body {
+    font-size: 1.05rem;
+  }
+
+  .wrap {
+    width: min(46rem, calc(100% - 1.5rem));
+  }
+
+  h1 {
+    font-size: 1.85rem;
+  }
+
+  .site-header {
+    padding-top: 1.6rem;
+  }
+
+  .toc-card {
+    flex-wrap: wrap;
+  }
+
+  .badge,
+  .toc-status {
+    margin-left: 2.7rem;
+  }
+
+  /* 窄屏时计算器改成一列，避免两个输入框挤在一起。 */
+  .calc-grid {
+    grid-template-columns: 1fr;
+  }
+}

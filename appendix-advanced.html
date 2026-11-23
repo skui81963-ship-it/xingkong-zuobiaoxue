@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<!--
+  appendix-advanced.html
+  岁差、大气折射、行星。只讲到能判断「这套课的计算会错在哪里」，不推导公式。
+-->
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>进阶话题 · 星空坐标学</title>
+    <meta name="description" content="岁差、大气折射，以及为什么行星不能直接用亮星星表。">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon.ico" sizes="any">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要内容</a>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="index.html">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path fill="#e6c27a" d="M8 0.8 L9.1 6.4 L15.2 8 L9.1 9.6 L8 15.2 L6.9 9.6 L0.8 8 L6.9 6.4 Z"/>
+          </svg>
+          星空坐标学
+        </a>
+        <p class="kicker">附录</p>
+        <h1>进阶话题</h1>
+      </div>
+    </header>
+    <main class="wrap lesson-main" id="main">
+      <p class="goal"><strong>学习目标：</strong>知道第六课的结果和精密星历差在哪里，差大约多少，以及哪些天体根本不能用那张恒星表。</p>
+
+      <section class="note">
+        <h2>一句话概括</h2>
+        <p>本课的计算是几何骨架：J2000 的恒星坐标，加上平恒星时，高度按真空直线算。岁差、折射和行星的移动都还没放进去。</p>
+      </section>
+
+      <section class="note">
+        <h2>核心知识点</h2>
+
+        <h3>岁差</h3>
+        <p>地球自转轴像倾斜的陀螺一样缓慢甩圈，一圈大约 2.6 万年。春分点因此沿黄道每年西移大约 50.3″。从 2000 年到 2026 年，累计大约 0.36°，但这个角度是沿黄道量的，不是每一颗星的赤经、赤纬都加上同一个数。</p>
+        <p>织女的赤经在这二十多年里大约增加了几十时秒，换成度是零点几度的量级。北极星则更靠近北天极：J2000 大约偏 0.74°，2026 年大约偏 0.6°。所以用本站的表算 2026 年的天空，方向通常还在肉眼可以接受的范围，但和当天的星历比，零点几度的差别是正常的，不是你算术错了。</p>
+        <p>要做「当年坐标」，需要把 J2000 的赤经、赤纬按岁差矩阵转到日期分点。那一步比本课的加减法长，Meeus 第 21 章有完整步骤。</p>
+
+        <h3>大气折射</h3>
+        <p>星光进大气会弯曲，看起来比真实方向更高。天顶附近几乎不抬；高度 45° 左右大约 1′；贴着地平大约 34′，也就是大约 0.57°。具体数字还随气温和气压变。</p>
+        <p>因此：</p>
+        <ul>
+          <li>半空中的高度，本课的结果和看见的位置通常只差一两角分，远小于 0.5°。</li>
+          <li>升和落差得明显。几何计算说高度 0° 的时刻，你其实在高度大约 −0.5° 时就已经看见它了。升起偏早、落下偏晚，各大约几分钟。</li>
+        </ul>
+        <p>第六课标明的是几何升落，故意没加这 0.5°，好跟第五课的 cos H₀ 对上。</p>
+
+        <h3>行星、太阳和月亮为什么不能查那张表</h3>
+        <p>亮星表里的赤经、赤纬钉在恒星上。行星、太阳、月亮相对恒星背景每天都在走。月亮一天大约 13°，太阳大约 1°，金星、火星等也常是每天几分到几度。把「昨天的赤经」拿来算今晚，方位可以错一整只手掌。</p>
+        <p>它们的算法是另一条路：先由日期算出这一刻在黄道上的位置，再换成当天的赤经、赤纬，然后才能接上第四课、第五课的恒星时和高度公式。后面那半段不变，变的是赤经、赤纬从哪来。太阳和月亮还要考虑视差，月亮的视差能到大约 1°。</p>
+        <p>所以：恒星用附录的表；行星、太阳、月亮要查当天的星历，或另写一套轨道计算。本站没有做后面这一套。</p>
+      </section>
+
+      <section class="note">
+        <h2>有趣的事实</h2>
+        <ul>
+          <li>章动是岁差之上的小点头，幅度大约 9″。它让真恒星时和平恒星时最多差约 1.2 秒，约 0.005°。本站的 GMST 是平恒星时。</li>
+          <li>世界时和地球真正的自转角（UT1）还能差零点几秒。对找星没有影响。</li>
+          <li>大气折射会把日出提前、日没推迟。航海历里的日出已经含了折射和太阳视半径，不能和本课「几何高度 0°」的恒星升落直接比分钟。</li>
+        </ul>
+      </section>
+
+      <section class="note">
+        <h2>小练习</h2>
+        <ol class="exercises">
+          <li>
+            <p>用 J2000 的织女坐标去对 2026 年的精密星图，方向差大约是一度，还是零点几度？</p>
+            <details class="answer">
+              <summary>查看答案</summary>
+              <p>零点几度。二十多年的岁差在黄道上大约 0.36°，落到某一颗星的赤经、赤纬上通常也是这个量级，不是好几度。</p>
+            </details>
+          </li>
+          <li>
+            <p>为什么第五课的升落时刻和你真正看见星星出现的时刻会差几分钟？</p>
+            <details class="answer">
+              <summary>查看答案</summary>
+              <p>大气折射在地平附近大约 0.5°。星星的真实高度还是略负的时候，看起来已经在地平线上了。</p>
+            </details>
+          </li>
+          <li>
+            <p>能不能把火星在某天的赤经写进亮星表，以后一直用？</p>
+            <details class="answer">
+              <summary>查看答案</summary>
+              <p>不能。火星相对恒星背景持续移动，那组赤经、赤纬只在那一天附近有效。恒星才适合印成一张长期使用的表。</p>
+            </details>
+          </li>
+        </ol>
+      </section>
+
+      <section class="note">
+        <h2>参考资料</h2>
+        <ul class="refs">
+          <li>Jean Meeus, <cite>Astronomical Algorithms</cite>：岁差与章动、大气折射、行星位置各有专章。</li>
+          <li>Sean E. Urban 与 P. Kenneth Seidelmann 主编, <cite>Explanatory Supplement to the Astronomical Almanac</cite>，岁差、时间和折射的定义。</li>
+          <li>本站第六课页面下方的说明：和精密星历比，预期差别是零点几度，不是计算写错。</li>
+        </ul>
+      </section>
+
+      <nav class="pager" aria-label="课文前后">
+        <a href="appendix-stars.html">上一页<small>亮星坐标表</small></a>
+        <a href="index.html">返回首页</a>
+        <span class="is-disabled">下一页<small>这是最后一页</small></span>
+      </nav>
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>骨架已经能算。岁差、折射和行星轨道，是同一条路上的后半段。</p>
+      </div>
+    </footer>
+  </body>
+</html>
