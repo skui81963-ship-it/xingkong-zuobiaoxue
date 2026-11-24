@@ -1,0 +1,78 @@
+/*
+  stargazing-theme.css
+  --------------------
+  虚拟观星的全部「看起来怎么样」：颜色、字体、字号、按钮、星点、连线。
+  只放自定义属性（--sg- 开头）。布局规则在 stargazing.css，
+  星星怎么转在 stargaze-*.js。换一套外观时，改这一份就够，不必动计算。
+
+  画布上的星点、网格、地平也读这些变量，所以改颜色会同时改网页和星图。
+*/
+
+:root {
+  --sg-font: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Noto Sans CJK SC",
+    "Source Han Sans SC", "Microsoft YaHei", "WenQuanYi Micro Hei", "Heiti SC",
+    sans-serif;
+  --sg-font-size: 0.98rem;
+  --sg-line-height: 1.55;
+
+  --sg-text: #f4f0e6;
+  --sg-text-dim: #c9c2b3;
+  --sg-text-strong: #f3d7a1;
+  --sg-panel-bg: rgba(12, 16, 32, 0.92);
+  --sg-panel-border: rgba(244, 240, 230, 0.16);
+  --sg-stage-bg: #070b16;
+  --sg-hud-bg: rgba(7, 11, 22, 0.72);
+  --sg-input-bg: #0e1428;
+  --sg-focus: #e6c27a;
+
+  --sg-radius: 14px;
+  --sg-radius-sm: 8px;
+  --sg-gap: 0.85rem;
+  --sg-stage-height: min(74vh, 820px);
+  --sg-stage-height-mobile: 68vh;
+  --sg-panel-width: 340px;
+
+  --sg-btn-font-size: 0.92rem;
+  --sg-btn-pad-y: 0.38rem;
+  --sg-btn-pad-x: 0.75rem;
+  --sg-btn-radius: 999px;
+  --sg-btn-border: 1px solid rgba(230, 194, 122, 0.45);
+  --sg-btn-bg: transparent;
+  --sg-btn-fg: #f4f0e6;
+  --sg-btn-on-bg: #e6c27a;
+  --sg-btn-on-fg: #241c0e;
+  --sg-btn-on-border: #e6c27a;
+
+  --sg-sky-top: #243156;
+  --sg-sky-bottom: #070b16;
+  --sg-ground: #1c140e;
+  --sg-ground-edge: #3a2a1c;
+  --sg-horizon: #e6c27a;
+  --sg-horizon-glow: rgba(230, 194, 122, 0.35);
+  --sg-cardinal: #f3d7a1;
+  --sg-star: #fff6e4;
+  --sg-star-halo: rgba(255, 246, 228, 0.35);
+  --sg-label: #f4f0e6;
+  --sg-label-size: 12px;
+  --sg-star-scale: 1;
+
+  --sg-const-line: rgba(232, 214, 176, 0.72);
+  --sg-const-line-width: 1.15;
+  --sg-aster-line-width: 2.15;
+  --sg-spring: #7dcea0;
+  --sg-summer: #f0a0c4;
+  --sg-autumn: #f0b45a;
+  --sg-winter: #8eb6f2;
+
+  --sg-grid-altaz: rgba(244, 240, 230, 0.28);
+  --sg-grid-eq: rgba(143, 208, 198, 0.4);
+  --sg-equator: #8fd0c6;
+  --sg-pole: #f0a8c4;
+  --sg-axis: rgba(240, 168, 196, 0.85);
+  --sg-sphere-limb: rgba(244, 240, 230, 0.45);
+  --sg-sphere-fill: rgba(180, 200, 255, 0.05);
+  --sg-earth-ocean: #2c527c;
+  --sg-earth-land: #6d9464;
+  --sg-observer: #f3d7a1;
+  --sg-back-star: 0.28;
+}
