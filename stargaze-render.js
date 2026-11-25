@@ -55,12 +55,12 @@ var StarGazeRender = (function () {
       land: pick(cs, "--sg-earth-land", "#6d9464"),
       observer: pick(cs, "--sg-observer", "#f4cdb8"),
       backStar: parseFloat(pick(cs, "--sg-back-star", "0.28")) || 0.28,
-      milky: pick(cs, "--sg-milky", "#d5def8"),
-      boundary: pick(cs, "--sg-boundary", "rgba(196, 176, 224, 0.8)"),
+      milky: pick(cs, "--sg-milky", "#ead6e4"),
+      boundary: pick(cs, "--sg-boundary", "rgba(214, 186, 232, 0.82)"),
       boundaryWidth: parseFloat(pick(cs, "--sg-boundary-width", "0.9")) || 0.9,
-      highlight: pick(cs, "--sg-highlight", "#ffe08a"),
+      highlight: pick(cs, "--sg-highlight", "#ffd0a4"),
       highlightWidth: parseFloat(pick(cs, "--sg-highlight-width", "2.4")) || 2.4,
-      consName: pick(cs, "--sg-cons-name", "#f3d7a1"),
+      consName: pick(cs, "--sg-cons-name", "#f4cdb8"),
       consNameSize: pick(cs, "--sg-cons-name-size", "13px"),
       spring: pick(cs, "--sg-spring", "#7dcea0"),
       summer: pick(cs, "--sg-summer", "#f0a0c4"),
@@ -730,11 +730,29 @@ var StarGazeRender = (function () {
     };
   }
 
+  /* 把颜色收成透明边，让银河带子两侧淡出时仍跟主题色一致。 */
+  function transparentOf(color) {
+    var m = String(color).trim();
+    var h, r, g, b, rgb;
+    if (m.charAt(0) === "#") {
+      h = m.slice(1);
+      if (h.length === 3) h = h.charAt(0) + h.charAt(0) + h.charAt(1) + h.charAt(1) + h.charAt(2) + h.charAt(2);
+      r = parseInt(h.slice(0, 2), 16);
+      g = parseInt(h.slice(2, 4), 16);
+      b = parseInt(h.slice(4, 6), 16);
+      return "rgba(" + r + "," + g + "," + b + ",0)";
+    }
+    rgb = m.match(/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/);
+    if (rgb) return "rgba(" + rgb[1] + "," + rgb[2] + "," + rgb[3] + ",0)";
+    return "rgba(234,214,228,0)";
+  }
+
   function fillMilkyQuad(ctx, a, b, alpha, color) {
+    var edge = transparentOf(color);
     var grd = ctx.createLinearGradient(a.n.x, a.n.y, a.s.x, a.s.y);
-    grd.addColorStop(0, "rgba(215,224,251,0)");
+    grd.addColorStop(0, edge);
     grd.addColorStop(0.5, color);
-    grd.addColorStop(1, "rgba(215,224,251,0)");
+    grd.addColorStop(1, edge);
     ctx.fillStyle = grd;
     ctx.globalAlpha = alpha;
     ctx.beginPath();

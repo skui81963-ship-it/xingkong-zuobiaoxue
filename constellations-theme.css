@@ -3,6 +3,7 @@
   ------------------------
   实用星座模拟的外观。只放自定义属性（--sg- 开头）。
   布局在 stargazing.css 和 constellations.css，星星怎么转在 stargaze-*.js。
+  配色和虚拟观星那一页同一套「暮光玫瑰金」：偏紫夜空、象牙正文、玫瑰金强调。
   以后想换颜色、字体、星点或连线，改这一份就够，不必动计算，也不必改虚拟观星那一页。
 
   画布上的星、银河、边界和地平也读这些变量。
@@ -15,15 +16,15 @@
   --sg-font-size: 0.98rem;
   --sg-line-height: 1.55;
 
-  --sg-text: #f4f0e6;
-  --sg-text-dim: #c9c2b3;
-  --sg-text-strong: #f3d7a1;
-  --sg-panel-bg: rgba(12, 16, 32, 0.92);
-  --sg-panel-border: rgba(244, 240, 230, 0.16);
-  --sg-stage-bg: #070b16;
-  --sg-hud-bg: rgba(7, 11, 22, 0.72);
-  --sg-input-bg: #0e1428;
-  --sg-focus: #e6c27a;
+  --sg-text: #f6ede8;                         /* 面板正文，跟全站 --ink 一致 */
+  --sg-text-dim: #cdb8b4;                     /* 次要说明，跟 --muted 一致 */
+  --sg-text-strong: #f4cdb8;                  /* 强调文字，跟 --gold-strong 一致 */
+  --sg-panel-bg: rgba(22, 10, 30, 0.92);      /* 右侧控制面板的半透明底 */
+  --sg-panel-border: rgba(246, 237, 232, 0.16);
+  --sg-stage-bg: #100814;                     /* 星图画布背后最深的底 */
+  --sg-hud-bg: rgba(16, 8, 20, 0.72);         /* 画布上时间条那一层薄底 */
+  --sg-input-bg: #120818;                     /* 面板里输入框的背景 */
+  --sg-focus: #e8b496;                        /* 焦点和滑块强调色，玫瑰金 */
 
   --sg-radius: 14px;
   --sg-radius-sm: 8px;
@@ -36,51 +37,51 @@
   --sg-btn-pad-y: 0.38rem;
   --sg-btn-pad-x: 0.75rem;
   --sg-btn-radius: 999px;
-  --sg-btn-border: 1px solid rgba(230, 194, 122, 0.45);
+  --sg-btn-border: 1px solid rgba(232, 180, 150, 0.45);
   --sg-btn-bg: transparent;
-  --sg-btn-fg: #f4f0e6;
-  --sg-btn-on-bg: #e6c27a;
-  --sg-btn-on-fg: #241c0e;
-  --sg-btn-on-border: #e6c27a;
+  --sg-btn-fg: #f6ede8;
+  --sg-btn-on-bg: #e8b496;                    /* 选中的按钮：玫瑰金底 */
+  --sg-btn-on-fg: #2a1610;                    /* 选中按钮上的深色字 */
+  --sg-btn-on-border: #e8b496;
 
-  --sg-sky-top: #243156;
-  --sg-sky-bottom: #070b16;
-  --sg-ground: #1c140e;
-  --sg-ground-edge: #3a2a1c;
-  --sg-horizon: #e6c27a;
-  --sg-horizon-glow: rgba(230, 194, 122, 0.35);
-  --sg-cardinal: #f3d7a1;
-  --sg-star: #fff6e4;
-  --sg-star-halo: rgba(255, 246, 228, 0.35);
-  --sg-label: #f4f0e6;
+  --sg-sky-top: #3a1a48;                      /* 星图天空靠近天顶的颜色 */
+  --sg-sky-bottom: #100814;                   /* 星图天空靠近地平的颜色 */
+  --sg-ground: #1c1010;                       /* 地面 */
+  --sg-ground-edge: #3a2420;                  /* 地面靠近地平的边缘 */
+  --sg-horizon: #e8b496;                      /* 地平线 */
+  --sg-horizon-glow: rgba(232, 180, 150, 0.35);
+  --sg-cardinal: #f4cdb8;                     /* 东南西北的字 */
+  --sg-star: #fff4ec;                         /* 星点 */
+  --sg-star-halo: rgba(255, 244, 236, 0.35);
+  --sg-label: #f6ede8;                        /* 星名标签 */
   --sg-label-size: 12px;
   --sg-star-scale: 1;
 
-  --sg-const-line: rgba(232, 214, 176, 0.72);
+  --sg-const-line: rgba(232, 200, 180, 0.72); /* 星座连线 */
   --sg-const-line-width: 1.15;
   --sg-aster-line-width: 2.15;
-  --sg-spring: #7dcea0;
+  --sg-spring: #7dcea0;                       /* 春季星座（四季色保持原样，方便辨认） */
   --sg-summer: #f0a0c4;
   --sg-autumn: #f0b45a;
   --sg-winter: #8eb6f2;
 
-  --sg-grid-altaz: rgba(244, 240, 230, 0.28);
-  --sg-grid-eq: rgba(143, 208, 198, 0.4);
-  --sg-equator: #8fd0c6;
-  --sg-pole: #f0a8c4;
-  --sg-axis: rgba(240, 168, 196, 0.85);
-  --sg-sphere-limb: rgba(244, 240, 230, 0.45);
-  --sg-sphere-fill: rgba(180, 200, 255, 0.05);
-  --sg-earth-ocean: #2c527c;
-  --sg-earth-land: #6d9464;
-  --sg-observer: #f3d7a1;
+  --sg-grid-altaz: rgba(246, 237, 232, 0.28); /* 地平坐标网格 */
+  --sg-grid-eq: rgba(142, 200, 196, 0.4);     /* 赤道坐标网格 */
+  --sg-equator: #8ec8c4;                      /* 天赤道，跟全站 --teal 一致 */
+  --sg-pole: #f090b0;                         /* 天极，跟全站 --rose 一致 */
+  --sg-axis: rgba(240, 144, 176, 0.85);       /* 天轴 */
+  --sg-sphere-limb: rgba(246, 237, 232, 0.45);
+  --sg-sphere-fill: rgba(220, 160, 220, 0.06);
+  --sg-earth-ocean: #3a3a6c;                  /* 天球外视里地球的海 */
+  --sg-earth-land: #6d9464;                   /* 地球的陆地 */
+  --sg-observer: #f4cdb8;                     /* 观测者标记 */
   --sg-back-star: 0.28;
 
-  --sg-milky: #d7e0fb;
-  --sg-boundary: rgba(196, 176, 224, 0.8);
+  --sg-milky: #ead6e4;                        /* 银河：暗紫天上的淡玫瑰雾带 */
+  --sg-boundary: rgba(214, 186, 232, 0.82);   /* 星座边界，淡丁香色，和暖色连线分开 */
   --sg-boundary-width: 0.9;
-  --sg-highlight: #ffe08a;
+  --sg-highlight: #ffd0a4;                    /* 选中的星座：更亮的玫瑰金，好认 */
   --sg-highlight-width: 2.4;
-  --sg-cons-name: #f3d7a1;
+  --sg-cons-name: #f4cdb8;                    /* 星座中文名，跟强调色一致 */
   --sg-cons-name-size: 13px;
 }
