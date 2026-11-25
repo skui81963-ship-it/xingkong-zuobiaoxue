@@ -22,7 +22,8 @@
   :root 表示整份文档的根（也就是 <html>）。
   以 -- 开头的叫自定义属性，可以当成「这个网站自己的变量」。
   后面写成 color: var(--ink); 就是在用这里的名字。
-  以后想换配色，优先改这一块。
+  以后想换配色，优先改这一块（含下面从写死颜色里抽出来的名字）。
+  当前这套叫「暮光玫瑰金」：偏紫的夜空、象牙正文、玫瑰金强调。
 */
 /*
   color-scheme 告诉浏览器：这个网站是深色的。
@@ -33,18 +34,46 @@ html {
 }
 
 :root {
-  --sky: #0b1020;          /* 页面底色：深夜的蓝黑 */
-  --sky-raised: #141a2e;   /* 比底色略亮一点，用来托住卡片 */
-  --ink: #f4f0e6;          /* 正文：暖白色，比纯白柔和 */
-  --muted: #c9c2b3;        /* 次要说明，仍然要在深色底上看得清 */
-  --gold: #e6c27a;         /* 强调色：像星光的淡金 */
-  --gold-strong: #f3d7a1;
-  --rose: #f0a8c4;         /* 图里的天轴 */
-  --teal: #8fd0c6;         /* 图里的天赤道 */
-  --line: rgba(244, 240, 230, 0.16);
+  --sky: #160a1e;          /* 页面底色：偏紫的暮光夜空 */
+  --sky-raised: #261430;   /* 比底色略亮一点，用来托住卡片 */
+  --ink: #f6ede8;          /* 正文：带一点玫瑰的象牙白 */
+  --muted: #cdb8b4;        /* 次要说明，仍然要在深色底上看得清 */
+  --gold: #e8b496;         /* 强调色：玫瑰金，用在小标签、按钮、地平 */
+  --gold-strong: #f4cdb8;  /* 更亮一点的玫瑰金，用在结果数字、加粗提示 */
+  --rose: #f090b0;         /* 图里的天轴 */
+  --teal: #8ec8c4;         /* 图里的天赤道 */
+  --line: rgba(246, 237, 232, 0.16); /* 分割线和卡片描边，是正文色的淡化 */
   --font: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Noto Sans CJK SC",
     "Source Han Sans SC", "Microsoft YaHei", "WenQuanYi Micro Hei", "Heiti SC",
     sans-serif;
+
+  /* 下面这些原先写在规则里，换色时容易漏。抽成变量后，改上面这一块就够。 */
+  --ink-on-gold: #2a1610;              /* 玫瑰金按钮上的深色字，保证够清楚 */
+  --selection-bg: #6a3a5a;             /* 用鼠标拖选文字时的底色 */
+  --selection-fg: #fff6f0;             /* 选中文字的颜色 */
+  --card-hover: #341c42;               /* 目录卡片悬停时略亮一点的底 */
+  --gold-border: rgba(232, 180, 150, 0.45);        /* 提示框、地点按钮的淡玫瑰金边 */
+  --gold-border-strong: rgba(232, 180, 150, 0.7);  /* 悬停时更明显一点的边 */
+  --gold-wash: rgba(232, 180, 150, 0.07);          /* 学习目标这类提示框的淡底 */
+  --gold-wash-soft: rgba(232, 180, 150, 0.06);     /* 要点左边那一条的更淡底 */
+  --gold-wash-formula: rgba(232, 180, 150, 0.08);  /* 公式盒子的淡底 */
+  --panel-inset: rgba(16, 8, 22, 0.55);            /* 图框和手算例子里更深的内底 */
+  --range-track: rgba(246, 237, 232, 0.28);        /* 滑块轨道 */
+  --input-bg: #120818;                             /* 输入框和下拉菜单的背景 */
+  --upright: rgba(220, 180, 230, 0.85);            /* 图里「竖直方向」图例的颜色 */
+  --upright-line: rgba(220, 180, 230, 0.75);       /* 图里「竖直方向」那条线 */
+  --sphere-outline: #e0c8e8;                       /* 天球外圈 */
+  --sky-half: rgba(140, 80, 170, 0.18);            /* 天球上半天（看得见的天空） */
+  --ground-half: rgba(50, 28, 36, 0.42);           /* 天球下半天（地平线以下） */
+  --dot-scp: #c8b0e0;                              /* 南天极的色点 */
+  --answer-bg: rgba(246, 237, 232, 0.04);          /* 练习答案展开后的浅底 */
+  --zenith-glow: rgba(140, 60, 150, 0.4);          /* 页面背景在天顶附近的光晕 */
+  --star-accent: rgba(232, 180, 150, 0.9);         /* 背景里带强调色的那颗星 */
+  --star-1: rgba(255, 244, 236, 0.9);              /* 背景里其余几颗小星星 */
+  --star-2: rgba(255, 255, 255, 0.45);
+  --star-3: rgba(255, 255, 255, 0.4);
+  --star-4: rgba(255, 255, 255, 0.35);
+  --star-5: rgba(255, 255, 255, 0.5);
 }
 
 /* ---------- 2. 全页通用 ---------- */
@@ -63,9 +92,9 @@ html {
 /*
   body 是整页看得见的内容。
   margin: 0 去掉浏览器自带的白边。
-  背景是夜空：一层深蓝，上面用几个很小的径向渐变当星星。
+  背景是夜空：一层暮光紫，上面用几个很小的径向渐变当星星。
   radial-gradient 从中心往外变色；这里中心是一个亮点，马上变成透明，看起来就是一颗星。
-  最后一层大椭圆是天顶附近稍微亮一点的天光。这些都是 CSS 画的，不是图片。
+  最后一层大椭圆是天顶附近稍微亮一点的天光。星星和光晕的颜色都来自 :root。
 */
 body {
   margin: 0;
@@ -76,21 +105,21 @@ body {
   line-height: 1.85;
   background-color: var(--sky);
   background-image:
-    radial-gradient(1.6px 1.6px at 12% 18%, rgba(255, 252, 240, 0.9), transparent),
-    radial-gradient(1.2px 1.2px at 28% 62%, rgba(255, 255, 255, 0.45), transparent),
-    radial-gradient(1.8px 1.8px at 72% 14%, rgba(243, 215, 161, 0.85), transparent),
-    radial-gradient(1px 1px at 84% 48%, rgba(255, 255, 255, 0.4), transparent),
-    radial-gradient(1.4px 1.4px at 58% 78%, rgba(255, 255, 255, 0.35), transparent),
-    radial-gradient(1.2px 1.2px at 90% 82%, rgba(255, 255, 255, 0.5), transparent),
-    radial-gradient(ellipse 90% 45% at 50% -8%, rgba(78, 104, 168, 0.38), transparent);
+    radial-gradient(1.6px 1.6px at 12% 18%, var(--star-1), transparent),
+    radial-gradient(1.2px 1.2px at 28% 62%, var(--star-2), transparent),
+    radial-gradient(1.8px 1.8px at 72% 14%, var(--star-accent), transparent),
+    radial-gradient(1px 1px at 84% 48%, var(--star-3), transparent),
+    radial-gradient(1.4px 1.4px at 58% 78%, var(--star-4), transparent),
+    radial-gradient(1.2px 1.2px at 90% 82%, var(--star-5), transparent),
+    radial-gradient(ellipse 90% 45% at 50% -8%, var(--zenith-glow), transparent);
 }
 
 /*
   用鼠标拖选文字时的颜色。深色页面如果沿用浏览器默认的蓝底，会有点刺眼。
 */
 ::selection {
-  background: #3c4d7a;
-  color: #fffaf1;
+  background: var(--selection-bg);
+  color: var(--selection-fg);
 }
 
 /*
@@ -113,7 +142,7 @@ body {
   z-index: 5;
   padding: 0.35rem 0.7rem;
   background: var(--gold);
-  color: #241c0e;
+  color: var(--ink-on-gold);
   text-decoration: none;
 }
 
@@ -161,6 +190,8 @@ body {
   width: 0.95rem;
   height: 0.95rem;
   display: block;
+  /* 小星星跟强调色走。HTML 里写成 fill="currentColor"，这里给定 color。 */
+  color: var(--gold);
 }
 
 /* 课次这种小标签：字小一点，颜色用金色，和下方大标题拉开层次。 */
@@ -260,8 +291,8 @@ strong {
 
 /* 只有真正的链接卡片才变化。即将推出的项是 <div>，点不了，也不伪装成能点。 */
 a.toc-card:hover {
-  border-color: rgba(230, 194, 122, 0.7);
-  background: #1a223c;
+  border-color: var(--gold-border-strong);
+  background: var(--card-hover);
 }
 
 a.toc-card:hover .toc-status {
@@ -353,8 +384,8 @@ a.toc-card:hover .toc-status {
 .goal {
   margin: 1.5rem 0 0;
   padding: 0.85rem 1rem;
-  background: rgba(230, 194, 122, 0.07);
-  border: 1px solid rgba(230, 194, 122, 0.45);
+  background: var(--gold-wash);
+  border: 1px solid var(--gold-border);
   border-radius: 12px;
 }
 
@@ -398,7 +429,7 @@ a.toc-card:hover .toc-status {
 .key {
   margin: 1rem 0;
   padding: 0.55rem 0 0.55rem 0.9rem;
-  background: rgba(230, 194, 122, 0.06);
+  background: var(--gold-wash-soft);
   border-left: 3px solid var(--gold);
 }
 
@@ -409,7 +440,7 @@ a.toc-card:hover .toc-status {
 
 .diagram-panel {
   padding: 0.9rem 0.9rem 1rem;
-  background: rgba(8, 12, 24, 0.55);
+  background: var(--panel-inset);
   border: 1px solid var(--line);
   border-radius: 16px;
 }
@@ -456,7 +487,7 @@ input[type="range"] {
   width: 100%;
   height: 2px;
   margin: 0.9rem 0 0.35rem;
-  background: rgba(244, 240, 230, 0.28);
+  background: var(--range-track);
   border-radius: 999px;
   cursor: pointer;
 }
@@ -465,7 +496,7 @@ input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 22px;
   height: 22px;
-  border: 2px solid #0b1020;
+  border: 2px solid var(--sky);
   border-radius: 50%;
   background: var(--gold);
   cursor: pointer;
@@ -474,7 +505,7 @@ input[type="range"]::-webkit-slider-thumb {
 input[type="range"]::-moz-range-thumb {
   width: 22px;
   height: 22px;
-  border: 2px solid #0b1020;
+  border: 2px solid var(--sky);
   border-radius: 50%;
   background: var(--gold);
   cursor: pointer;
@@ -491,7 +522,7 @@ input[type="range"]::-moz-range-thumb {
 .presets button {
   margin: 0;
   padding: 0.38rem 0.75rem;
-  border: 1px solid rgba(230, 194, 122, 0.45);
+  border: 1px solid var(--gold-border);
   border-radius: 999px;
   background: transparent;
   color: var(--ink);
@@ -504,7 +535,7 @@ input[type="range"]::-moz-range-thumb {
 .presets button[aria-pressed="true"] {
   background: var(--gold);
   border-color: var(--gold);
-  color: #241c0e;
+  color: var(--ink-on-gold);
 }
 
 /* 滑块下方那句随纬度变化的说明。aria-live 在 HTML 里，样式上只负责让它好读。 */
@@ -545,7 +576,7 @@ input[type="range"]::-moz-range-thumb {
 .swatch-horizon { border-top-color: var(--gold); }
 .swatch-axis { border-top-color: var(--rose); }
 .swatch-equator { border-top-color: var(--teal); border-top-style: dashed; }
-.swatch-upright { border-top-color: rgba(183, 199, 239, 0.85); }
+.swatch-upright { border-top-color: var(--upright); }
 
 /* 内嵌 SVG。width: 100% 让它跟栏目一样宽；height: auto 按 viewBox 的比例缩放，不变形。 */
 .sky-svg {
@@ -575,16 +606,16 @@ input[type="range"]::-moz-range-thumb {
 
 .sphere-outline {
   fill: none;
-  stroke: #c9d4f2;
+  stroke: var(--sphere-outline);
   stroke-width: 1.5;
 }
 
 .sky-half {
-  fill: rgba(92, 124, 186, 0.16);
+  fill: var(--sky-half);
 }
 
 .ground-half {
-  fill: rgba(58, 46, 32, 0.38);
+  fill: var(--ground-half);
 }
 
 .line-horizon {
@@ -607,7 +638,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .line-upright {
-  stroke: rgba(183, 199, 239, 0.75);
+  stroke: var(--upright-line);
   stroke-width: 1.4;
   stroke-dasharray: 2 5;
 }
@@ -633,7 +664,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .dot-scp {
-  fill: #9eb6e8;
+  fill: var(--dot-scp);
 }
 
 .dot-node {
@@ -661,7 +692,7 @@ input[type="range"]::-moz-range-thumb {
   margin-top: 0.35rem;
   padding: 0.45rem 0.75rem;
   border-radius: 10px;
-  background: rgba(244, 240, 230, 0.04);
+  background: var(--answer-bg);
 }
 
 .answer summary {
@@ -706,7 +737,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .pager a:hover {
-  border-color: rgba(230, 194, 122, 0.7);
+  border-color: var(--gold-border-strong);
 }
 
 .pager .is-disabled {
@@ -769,7 +800,7 @@ table.data th {
 .example {
   margin: 1rem 0;
   padding: 0.2rem 1rem 0.8rem;
-  background: rgba(8, 12, 24, 0.55);
+  background: var(--panel-inset);
   border: 1px solid var(--line);
   border-radius: 14px;
 }
@@ -782,7 +813,7 @@ table.data th {
 .formula {
   margin: 0.7rem 0;
   padding: 0.45rem 0.75rem;
-  background: rgba(230, 194, 122, 0.08);
+  background: var(--gold-wash-formula);
   border-radius: 8px;
   font-variant-numeric: tabular-nums;
 }
@@ -826,7 +857,7 @@ select {
   padding: 0.4rem 0.55rem;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #0e1428;
+  background: var(--input-bg);
   color: var(--ink);
   font: inherit;
   line-height: 1.4;
