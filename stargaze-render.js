@@ -55,6 +55,13 @@ var StarGazeRender = (function () {
       land: pick(cs, "--sg-earth-land", "#6d9464"),
       observer: pick(cs, "--sg-observer", "#f3d7a1"),
       backStar: parseFloat(pick(cs, "--sg-back-star", "0.28")) || 0.28,
+      milky: pick(cs, "--sg-milky", "#d5def8"),
+      boundary: pick(cs, "--sg-boundary", "rgba(196, 176, 224, 0.8)"),
+      boundaryWidth: parseFloat(pick(cs, "--sg-boundary-width", "0.9")) || 0.9,
+      highlight: pick(cs, "--sg-highlight", "#ffe08a"),
+      highlightWidth: parseFloat(pick(cs, "--sg-highlight-width", "2.4")) || 2.4,
+      consName: pick(cs, "--sg-cons-name", "#f3d7a1"),
+      consNameSize: pick(cs, "--sg-cons-name-size", "13px"),
       spring: pick(cs, "--sg-spring", "#7dcea0"),
       summer: pick(cs, "--sg-summer", "#f0a0c4"),
       autumn: pick(cs, "--sg-autumn", "#f0b45a"),
@@ -199,7 +206,9 @@ var StarGazeRender = (function () {
     地面。地平线圈若完整落在投影里，用多边形分出「天」和「地」；
     有一段转到脑后画不出来时，改用一条条向下的带子把地面铺上。
   */
-  function drawGround(ctx, w, h, basis, zoom, theme) {
+  function drawGround(ctx, w, h, basis, zoom, theme, alpha) {
+    if (alpha == null) alpha = 1;
+    if (alpha <= 0.001) return;
     function at(alt, az) {
       return projectStereo(StarGazeAstro.enu(alt, az), basis, w, h, zoom);
     }
@@ -217,6 +226,8 @@ var StarGazeRender = (function () {
       loop.push(p);
     }
 
+    ctx.save();
+    ctx.globalAlpha = alpha;
     ctx.fillStyle = theme.ground;
     if (complete && loop.length > 8) {
       var centerSky = basis.forward[2] > 0;
@@ -237,6 +248,7 @@ var StarGazeRender = (function () {
       } else {
         ctx.fill();
       }
+      ctx.restore();
       return;
     }
 
@@ -261,6 +273,7 @@ var StarGazeRender = (function () {
         prevB = b;
       }
     }
+    ctx.restore();
   }
 
   function drawHorizonLine(ctx, w, h, basis, zoom, theme) {
@@ -318,11 +331,12 @@ var StarGazeRender = (function () {
     }
   }
 
-  function drawAltAzGrid(ctx, w, h, basis, zoom, theme) {
+  function drawAltAzGrid(ctx, w, h, basis, zoom, theme, minAlt) {
+    if (minAlt == null) minAlt = 0;
     ctx.save();
     ctx.strokeStyle = theme.gridAlt;
     ctx.lineWidth = 1;
-    var alts = [30, 60];
+    var alts = minAlt < 0 ? [-30, 30, 60] : [30, 60];
     var a;
     for (a = 0; a < alts.length; a++) {
       ctx.beginPath();
@@ -349,7 +363,7 @@ var StarGazeRender = (function () {
       ctx.beginPath();
       started = false;
       var alt;
-      for (alt = 0; alt <= 88; alt += 3) {
+      for (alt = minAlt; alt <= 88; alt += 3) {
         var q = projectStereo(StarGazeAstro.enu(alt, azLines[z]), basis, w, h, zoom);
         if (!q) {
           started = false;
@@ -367,7 +381,8 @@ var StarGazeRender = (function () {
     ctx.restore();
   }
 
-  function drawEquatorGridGround(ctx, w, h, basis, zoom, theme, lst, lat) {
+  function drawEquatorGridGround(ctx, w, h, basis, zoom, theme, lst, lat, minAlt) {
+    if (minAlt == null) minAlt = -1;
     ctx.save();
     ctx.lineWidth = 1;
     var decs = [-60, -30, 0, 30, 60, 75];
@@ -380,7 +395,7 @@ var StarGazeRender = (function () {
       for (ra = 0; ra <= 360; ra += 4) {
         var hor = StarGazeAstro.horizontal(ra, decs[d], lst, lat);
         var p = null;
-        if (hor.alt > -1) {
+        if (hor.alt > minAlt) {
           p = projectStereo(StarGazeAstro.enu(hor.alt, hor.az), basis, w, h, zoom);
         }
         if (!p) {
@@ -405,7 +420,7 @@ var StarGazeRender = (function () {
       for (dec = -80; dec <= 80; dec += 3) {
         var hor2 = StarGazeAstro.horizontal(hour, dec, lst, lat);
         var q = null;
-        if (hor2.alt > -1) {
+        if (hor2.alt > minAlt) {
           q = projectStereo(StarGazeAstro.enu(hor2.alt, hor2.az), basis, w, h, zoom);
         }
         if (!q) {
@@ -478,6 +493,8 @@ var StarGazeRender = (function () {
     if (state.zoom > 1.7) limit = 3.5;
     if (state.zoom > 2.6) limit = 4.8;
     if (checked > 0 && checked <= 2) limit = 5.6;
+    /* 88 个星座一起开着时，拜耳名会和星座名叠在一起。只留较亮的中文星名。 */
+    var famousOnly = !!(state.catalog && state.catalog.meta) && checked > 8 && state.zoom < 2.2;
     ctx.fillStyle = theme.label;
     ctx.textAlign = "left";
     ctx.textBaseline = "bottom";
@@ -491,6 +508,7 @@ var StarGazeRender = (function () {
     for (i = 0; i < ordered.length; i++) {
       var item = ordered[i];
       if (item.star.mag > limit) continue;
+      if (famousOnly && (!item.star.name || item.star.mag > 1.8)) continue;
       var text = labelText(item.star);
       if (!text) continue;
       var tw = ctx.measureText(text).width;
@@ -516,8 +534,16 @@ var StarGazeRender = (function () {
     ctx.globalAlpha = 1;
   }
 
-  function drawConstLines(ctx, map, project, theme, state, aboveOnly) {
+  function lineStyle(theme, state, cons) {
+    if (state.highlightCons && cons === state.highlightCons) {
+      return { color: theme.highlight, width: theme.highlightWidth };
+    }
+    return { color: theme.constLine, width: theme.constWidth };
+  }
+
+  function drawConstLines(ctx, map, project, theme, state, aboveOnly, clipHorizon) {
     if (!state.showConstLines) return;
+    if (clipHorizon == null) clipHorizon = !!aboveOnly;
     var lines = state.catalog.lines;
     var i;
     for (i = 0; i < lines.length; i++) {
@@ -526,8 +552,9 @@ var StarGazeRender = (function () {
       var a = map[line.a];
       var b = map[line.b];
       if (!a || !b) continue;
+      var style = lineStyle(theme, state, line.cons);
       var samples = arcSamples(aboveOnly ? a.enu : a.eq, aboveOnly ? b.enu : b.eq, 5);
-      if (aboveOnly) {
+      if (clipHorizon) {
         var kept = [];
         var s;
         for (s = 0; s < samples.length; s++) {
@@ -535,8 +562,8 @@ var StarGazeRender = (function () {
           else kept.push(null);
         }
         /* null 会把折线断开。strokeProjected 只接受向量，这里改成逐段画。 */
-        ctx.strokeStyle = theme.constLine;
-        ctx.lineWidth = theme.constWidth;
+        ctx.strokeStyle = style.color;
+        ctx.lineWidth = style.width;
         ctx.lineCap = "round";
         ctx.beginPath();
         var started = false;
@@ -559,13 +586,14 @@ var StarGazeRender = (function () {
         }
         ctx.stroke();
       } else {
-        strokeProjected(ctx, samples, project, theme.constLine, theme.constWidth, null);
+        strokeProjected(ctx, samples, project, style.color, style.width, null);
       }
     }
   }
 
-  function drawAsterLines(ctx, map, project, theme, state, aboveOnly, alphaOf) {
-    var list = state.catalog.asterisms;
+  function drawAsterLines(ctx, map, project, theme, state, aboveOnly, alphaOf, clipHorizon) {
+    var list = state.catalog.asterisms || [];
+    if (clipHorizon == null) clipHorizon = !!aboveOnly;
     var i;
     for (i = 0; i < list.length; i++) {
       var aster = list[i];
@@ -577,7 +605,7 @@ var StarGazeRender = (function () {
         var b = map[aster.loop[(k + 1) % aster.loop.length]];
         if (!a || !b) continue;
         var samples = arcSamples(aboveOnly ? a.enu : a.eq, aboveOnly ? b.enu : b.eq, 10);
-        if (aboveOnly) {
+        if (clipHorizon) {
           ctx.strokeStyle = color;
           ctx.lineWidth = theme.asterWidth;
           ctx.lineCap = "round";
@@ -609,34 +637,301 @@ var StarGazeRender = (function () {
     }
   }
 
-  function drawGroundView(ctx, w, h, state, theme) {
-    var basis = state.basis;
-    var zoom = state.zoom;
-    drawSky(ctx, w, h, basis, zoom, theme);
-    if (state.showEquatorGrid) {
-      drawEquatorGridGround(ctx, w, h, basis, zoom, theme, state.lst, state.lat);
+  /* 没打开「地面透明」时按不透明算，虚拟观星的画面和原来一样。 */
+  function resolveGroundAlpha(state) {
+    if (state.groundOn === false) return 0;
+    if (typeof state.groundAlpha === "number" && isFinite(state.groundAlpha)) {
+      if (state.groundAlpha <= 0) return 0;
+      if (state.groundAlpha >= 1) return 1;
+      return state.groundAlpha;
     }
-    if (state.showHorizonGrid) {
-      drawAltAzGrid(ctx, w, h, basis, zoom, theme);
-    }
-    drawGround(ctx, w, h, basis, zoom, theme);
-    if (state.showHorizon) {
-      drawHorizonLine(ctx, w, h, basis, zoom, theme);
-      drawCardinals(ctx, w, h, basis, zoom, theme);
-    }
+    return 1;
+  }
 
-    var built = shownStarMap(state.catalog, state);
+  function boundsOn(edge, state) {
+    var i;
+    for (i = 0; i < edge.cons.length; i++) {
+      if (state.consOn[edge.cons[i]]) return true;
+    }
+    return false;
+  }
+
+  function strokeScreen(ctx, pts, color, width) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    var started = false;
+    var i;
+    for (i = 0; i < pts.length; i++) {
+      var p = pts[i];
+      if (!p) {
+        started = false;
+        continue;
+      }
+      if (!started) {
+        ctx.moveTo(p.x, p.y);
+        started = true;
+      } else {
+        ctx.lineTo(p.x, p.y);
+      }
+    }
+    ctx.stroke();
+  }
+
+  function jumpTooFar(a, b, limit) {
+    if (!a || !b) return false;
+    var dx = a.x - b.x;
+    var dy = a.y - b.y;
+    return dx * dx + dy * dy > limit * limit;
+  }
+
+  /* 赤道坐标里的向量，换成地面上的东、北、上。和 horizontal + enu 是同一套方向。 */
+  function eqToEnu(eq, latDeg) {
+    var lat = latDeg * Math.PI / 180;
+    var sp = Math.sin(lat);
+    var cp = Math.cos(lat);
+    return [-eq[1], -sp * eq[0] + cp * eq[2], cp * eq[0] + sp * eq[2]];
+  }
+
+  /*
+    银河沿银道画成一条光带：北缘和南缘之间填色，中间更亮。
+    屏幕上的宽度有上限，投影被拉得很长时这一小段断开，避免甩出楔形。
+  */
+  function milkyEnds(sample, lst) {
+    var north = StarGazeAstro.equatorialVector(sample[0], sample[1], lst);
+    var south = StarGazeAstro.equatorialVector(sample[2], sample[3], lst);
+    var mid = StarGazeAstro.norm([
+      north[0] + south[0], north[1] + south[1], north[2] + south[2]
+    ]);
+    return { north: north, south: south, mid: mid, glow: sample[4] };
+  }
+
+  /*
+    把北缘、南缘收到不超过 maxW 的宽度，再填成一条带子。
+    圆头粗线会在地平附近叠成一节一节的珠子，所以这里用四边形填充。
+  */
+  function capBand(nP, sP, maxW) {
+    if (!nP || !sP) return null;
+    var dx = sP.x - nP.x;
+    var dy = sP.y - nP.y;
+    var len = Math.sqrt(dx * dx + dy * dy);
+    if (len < 1) return null;
+    var half = Math.min(len, maxW) / 2;
+    var mx = (nP.x + sP.x) / 2;
+    var my = (nP.y + sP.y) / 2;
+    var ux = dx / len;
+    var uy = dy / len;
+    return {
+      n: { x: mx - ux * half, y: my - uy * half },
+      s: { x: mx + ux * half, y: my + uy * half },
+      mid: { x: mx, y: my }
+    };
+  }
+
+  function fillMilkyQuad(ctx, a, b, alpha, color) {
+    var grd = ctx.createLinearGradient(a.n.x, a.n.y, a.s.x, a.s.y);
+    grd.addColorStop(0, "rgba(215,224,251,0)");
+    grd.addColorStop(0.5, color);
+    grd.addColorStop(1, "rgba(215,224,251,0)");
+    ctx.fillStyle = grd;
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    ctx.moveTo(a.n.x, a.n.y);
+    ctx.lineTo(b.n.x, b.n.y);
+    ctx.lineTo(b.s.x, b.s.y);
+    ctx.lineTo(a.s.x, a.s.y);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function drawMilkyGround(ctx, w, h, basis, zoom, theme, state) {
+    var mw = state.catalog && state.catalog.milky;
+    var alpha = state.milkyAlpha;
+    if (!mw || !state.showMilkyWay || !(alpha > 0)) return;
+    ctx.save();
+    var prev = null;
+    var limit = Math.min(w, h) * 0.22;
+    var maxW = Math.min(w, h) * 0.11;
+    var i;
+    for (i = 0; i < mw.length; i++) {
+      var ends = milkyEnds(mw[i], state.lst);
+      var band = capBand(
+        projectStereo(eqToEnu(ends.north, state.lat), basis, w, h, zoom),
+        projectStereo(eqToEnu(ends.south, state.lat), basis, w, h, zoom),
+        maxW
+      );
+      if (band && prev && !jumpTooFar(prev.mid, band.mid, limit) &&
+          !jumpTooFar(prev.n, band.n, limit) && !jumpTooFar(prev.s, band.s, limit)) {
+        fillMilkyQuad(ctx, prev, band, alpha * (0.5 * (prev.glow + ends.glow)), theme.milky);
+      }
+      prev = band ? { n: band.n, s: band.s, mid: band.mid, glow: ends.glow } : null;
+    }
+    ctx.restore();
+  }
+
+  function drawMilkyOutside(ctx, w, h, cam, state, theme) {
+    var mw = state.catalog && state.catalog.milky;
+    var alpha = state.milkyAlpha;
+    if (!mw || !state.showMilkyWay || !(alpha > 0)) return;
+    ctx.save();
+    var prev = null;
+    var limit = Math.min(w, h) * 0.18;
+    var maxW = Math.min(w, h) * 0.09;
+    var i;
+    for (i = 0; i < mw.length; i++) {
+      var ends = milkyEnds(mw[i], state.lst);
+      var front = facingCamera(ends.mid, cam);
+      var band = capBand(
+        projectOutside(ends.north, cam, w, h),
+        projectOutside(ends.south, cam, w, h),
+        maxW
+      );
+      if (band && prev && prev.front === front && !jumpTooFar(prev.mid, band.mid, limit) &&
+          !jumpTooFar(prev.n, band.n, limit) && !jumpTooFar(prev.s, band.s, limit)) {
+        var fade = front ? 1 : theme.backStar;
+        fillMilkyQuad(ctx, prev, band, alpha * fade * (0.5 * (prev.glow + ends.glow)), theme.milky);
+      }
+      prev = band ? { n: band.n, s: band.s, mid: band.mid, glow: ends.glow, front: front } : null;
+    }
+    ctx.restore();
+  }
+
+  function drawBoundsGround(ctx, w, h, basis, zoom, theme, state, seeBelow) {
+    var edges = state.catalog && state.catalog.bounds;
+    if (!state.showBounds || !edges) return;
+    var limit = Math.min(w, h) * 0.7;
+    var i, k;
+    for (i = 0; i < edges.length; i++) {
+      var edge = edges[i];
+      if (!boundsOn(edge, state)) continue;
+      var hi = state.highlightCons && edge.cons.indexOf(state.highlightCons) !== -1;
+      var pts = [];
+      var prev = null;
+      for (k = 0; k < edge.pts.length; k++) {
+        var hor = StarGazeAstro.horizontal(edge.pts[k][0], edge.pts[k][1], state.lst, state.lat);
+        var p = null;
+        if (seeBelow || hor.alt > -0.4) {
+          p = projectStereo(StarGazeAstro.enu(hor.alt, hor.az), basis, w, h, zoom);
+        }
+        if (p && prev && jumpTooFar(prev, p, limit)) pts.push(null);
+        pts.push(p);
+        if (p) prev = p;
+      }
+      strokeScreen(ctx, pts, hi ? theme.highlight : theme.boundary, hi ? theme.boundaryWidth * 1.8 : theme.boundaryWidth);
+    }
+  }
+
+  function drawBoundsOutside(ctx, w, h, cam, state, theme) {
+    var edges = state.catalog && state.catalog.bounds;
+    if (!state.showBounds || !edges) return;
     function project(vec) {
-      return projectStereo(vec, basis, w, h, zoom);
+      return projectOutside(vec, cam, w, h);
     }
-    drawConstLines(ctx, built.map, project, theme, state, true);
-    drawAsterLines(ctx, built.map, project, theme, state, true, null);
+    function alphaOf(vec) {
+      return facingCamera(vec, cam) ? 1 : 0.35;
+    }
+    var i, k;
+    for (i = 0; i < edges.length; i++) {
+      var edge = edges[i];
+      if (!boundsOn(edge, state)) continue;
+      var hi = state.highlightCons && edge.cons.indexOf(state.highlightCons) !== -1;
+      var samples = [];
+      for (k = 0; k < edge.pts.length; k++) {
+        samples.push(StarGazeAstro.equatorialVector(edge.pts[k][0], edge.pts[k][1], state.lst));
+      }
+      strokeProjected(
+        ctx, samples, project,
+        hi ? theme.highlight : theme.boundary,
+        hi ? theme.boundaryWidth * 1.8 : theme.boundaryWidth,
+        alphaOf
+      );
+    }
+  }
 
+  /* 星座名写在棍棒图的中间。挤在一起的名字让开，正在定位的那一个始终画出来。 */
+  function drawConsNames(ctx, w, h, state, theme, projectRaDec) {
+    if (!state.showConsNames || !state.catalog || !state.catalog.meta) return;
+    var meta = state.catalog.meta;
+    var size = parseFloat(theme.consNameSize);
+    if (!isFinite(size)) size = 13;
+    ctx.save();
+    ctx.font = Math.round(size) + "px " + theme.font;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    if (state.highlightCons && state.consOn[state.highlightCons]) {
+      var hc = null;
+      var n;
+      for (n = 0; n < meta.length; n++) {
+        if (meta[n].id === state.highlightCons) hc = meta[n];
+      }
+      if (hc) {
+        var hp = projectRaDec(hc.ra, hc.dec);
+        if (hp && hp.x >= -10 && hp.y >= -10 && hp.x <= w + 10 && hp.y <= h + 10) {
+          ctx.strokeStyle = theme.highlight;
+          ctx.lineWidth = 1.5;
+          ctx.globalAlpha = hp.alpha == null ? 0.95 : hp.alpha;
+          ctx.beginPath();
+          ctx.arc(hp.x, hp.y, 15, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
+    }
+    var items = [];
+    var i, k;
+    for (i = 0; i < meta.length; i++) {
+      var c = meta[i];
+      if (!state.consOn[c.id]) continue;
+      var labels = c.labels && c.labels.length ? c.labels : [{ ra: c.ra, dec: c.dec }];
+      for (k = 0; k < labels.length; k++) {
+        var p = projectRaDec(labels[k].ra, labels[k].dec);
+        if (!p) continue;
+        if (p.x < 6 || p.y < 6 || p.x > w - 6 || p.y > h - 6) continue;
+        items.push({ c: c, p: p, hi: state.highlightCons === c.id });
+      }
+    }
+    items.sort(function (a, b) {
+      var da = (a.p.x - w / 2) * (a.p.x - w / 2) + (a.p.y - h / 2) * (a.p.y - h / 2);
+      var db = (b.p.x - w / 2) * (b.p.x - w / 2) + (b.p.y - h / 2) * (b.p.y - h / 2);
+      return da - db;
+    });
+    var boxes = [];
+    function drawOne(item, force) {
+      var text = item.c.name;
+      var tw = ctx.measureText(text).width;
+      var th = size + 2;
+      var box = { x: item.p.x - tw / 2 - 4, y: item.p.y - th / 2 - 3, w: tw + 8, h: th + 6 };
+      if (!force) {
+        var b;
+        for (b = 0; b < boxes.length; b++) {
+          var o = boxes[b];
+          if (box.x < o.x + o.w && box.x + box.w > o.x && box.y < o.y + o.h && box.y + box.h > o.y) return;
+        }
+      }
+      boxes.push(box);
+      ctx.globalAlpha = item.p.alpha == null ? 0.95 : Math.max(0.4, item.p.alpha);
+      ctx.fillStyle = item.hi ? theme.highlight : theme.consName;
+      ctx.fillText(text, item.p.x, item.p.y);
+    }
+    var hiItems = [];
+    for (i = 0; i < items.length; i++) {
+      if (items[i].hi) hiItems.push(items[i]);
+    }
+    /* 先占住正在定位的名字，别的名字让开，避免盖住高亮。 */
+    for (i = 0; i < hiItems.length; i++) drawOne(hiItems[i], true);
+    for (i = 0; i < items.length; i++) {
+      if (!items[i].hi) drawOne(items[i], false);
+    }
+    ctx.restore();
+  }
+
+  function placeStars(built, project, seeBelow, w, h) {
     var placed = [];
     var i;
     for (i = 0; i < built.list.length; i++) {
       var item = built.list[i];
-      if (item.alt < 0) continue;
+      if (!seeBelow && item.alt < 0) continue;
       var p = project(item.enu);
       if (!p) continue;
       if (p.x < -30 || p.y < -30 || p.x > w + 30 || p.y > h + 30) continue;
@@ -649,9 +944,64 @@ var StarGazeRender = (function () {
         alpha: 1
       });
     }
-    drawStarDots(ctx, placed, theme, h);
-    drawLabels(ctx, placed, theme, w, h, state);
-    lastHits = placed;
+    return placed;
+  }
+
+  function drawGroundView(ctx, w, h, state, theme) {
+    var basis = state.basis;
+    var zoom = state.zoom;
+    var gAlpha = resolveGroundAlpha(state);
+    var seeBelow = gAlpha < 0.999;
+    drawSky(ctx, w, h, basis, zoom, theme);
+    if (state.showMilkyWay) drawMilkyGround(ctx, w, h, basis, zoom, theme, state);
+    if (state.showEquatorGrid) {
+      drawEquatorGridGround(ctx, w, h, basis, zoom, theme, state.lst, state.lat, seeBelow ? -89 : -1);
+    }
+    if (state.showHorizonGrid) {
+      drawAltAzGrid(ctx, w, h, basis, zoom, theme, seeBelow ? -75 : 0);
+    }
+
+    var built = shownStarMap(state.catalog, state);
+    function project(vec) {
+      return projectStereo(vec, basis, w, h, zoom);
+    }
+    function projectRaDec(ra, dec) {
+      var hor = StarGazeAstro.horizontal(ra, dec, state.lst, state.lat);
+      if (!seeBelow && hor.alt < 0) return null;
+      var p = projectStereo(StarGazeAstro.enu(hor.alt, hor.az), basis, w, h, zoom);
+      return p;
+    }
+
+    if (!seeBelow) {
+      drawGround(ctx, w, h, basis, zoom, theme, 1);
+      if (state.showHorizon) {
+        drawHorizonLine(ctx, w, h, basis, zoom, theme);
+        drawCardinals(ctx, w, h, basis, zoom, theme);
+      }
+      if (state.showBounds) drawBoundsGround(ctx, w, h, basis, zoom, theme, state, false);
+      drawConstLines(ctx, built.map, project, theme, state, true);
+      drawAsterLines(ctx, built.map, project, theme, state, true, null);
+      var placed = placeStars(built, project, false, w, h);
+      drawStarDots(ctx, placed, theme, h);
+      drawLabels(ctx, placed, theme, w, h, state);
+      drawConsNames(ctx, w, h, state, theme, projectRaDec);
+      lastHits = placed;
+      return;
+    }
+
+    if (state.showBounds) drawBoundsGround(ctx, w, h, basis, zoom, theme, state, true);
+    drawConstLines(ctx, built.map, project, theme, state, true, false);
+    drawAsterLines(ctx, built.map, project, theme, state, true, null, false);
+    var placedBelow = placeStars(built, project, true, w, h);
+    drawStarDots(ctx, placedBelow, theme, h);
+    drawGround(ctx, w, h, basis, zoom, theme, gAlpha);
+    if (state.showHorizon) {
+      drawHorizonLine(ctx, w, h, basis, zoom, theme);
+      drawCardinals(ctx, w, h, basis, zoom, theme);
+    }
+    drawLabels(ctx, placedBelow, theme, w, h, state);
+    drawConsNames(ctx, w, h, state, theme, projectRaDec);
+    lastHits = placedBelow;
   }
 
   function outsideCamera(state) {
@@ -927,6 +1277,7 @@ var StarGazeRender = (function () {
     ctx.fillStyle = theme.skyBottom;
     ctx.fillRect(0, 0, w, h);
     drawSphereLimb(ctx, w, h, cam, theme);
+    if (state.showMilkyWay) drawMilkyOutside(ctx, w, h, cam, state, theme);
 
     var built = shownStarMap(state.catalog, state);
     function project(vec) {
@@ -942,8 +1293,6 @@ var StarGazeRender = (function () {
       var lines = state.catalog.lines;
       var i;
       if (state.showConstLines) {
-        ctx.strokeStyle = theme.constLine;
-        ctx.lineWidth = theme.constWidth;
         ctx.lineCap = "round";
         for (i = 0; i < lines.length; i++) {
           var line = lines[i];
@@ -951,6 +1300,9 @@ var StarGazeRender = (function () {
           var a = built.map[line.a];
           var b = built.map[line.b];
           if (!a || !b) continue;
+          var style = lineStyle(theme, state, line.cons);
+          ctx.strokeStyle = style.color;
+          ctx.lineWidth = style.width;
           var samples = arcSamples(a.eq, b.eq, 4);
           var s;
           ctx.beginPath();
@@ -977,7 +1329,7 @@ var StarGazeRender = (function () {
           ctx.stroke();
         }
       }
-      var asters = state.catalog.asterisms;
+      var asters = state.catalog.asterisms || [];
       for (i = 0; i < asters.length; i++) {
         var aster = asters[i];
         if (!state.astOn[aster.id]) continue;
@@ -1041,9 +1393,17 @@ var StarGazeRender = (function () {
     drawOutsideGuides(ctx, w, h, cam, state, theme);
     drawLines(true);
     drawStarDots(ctx, placedFront, theme, h);
+    if (state.showBounds) drawBoundsOutside(ctx, w, h, cam, state, theme);
     drawEarth(ctx, w, h, cam, state, theme);
     var placed = placedBack.concat(placedFront);
     drawLabels(ctx, placed, theme, w, h, state);
+    drawConsNames(ctx, w, h, state, theme, function (ra, dec) {
+      var v = StarGazeAstro.equatorialVector(ra, dec, state.lst);
+      var p = projectOutside(v, cam, w, h);
+      if (!p) return null;
+      p.alpha = facingCamera(v, cam) ? 1 : theme.backStar;
+      return p;
+    });
     lastHits = placed;
   }
 
