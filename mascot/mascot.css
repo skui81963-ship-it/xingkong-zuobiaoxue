@@ -1,0 +1,316 @@
+/*
+  mascot.css
+  ----------
+  深葵夜的布局：全屏对话、右侧常驻、复习测验。
+  颜色从 mascot-theme.css 的变量来。
+*/
+
+.sk-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  color: var(--sk-ink);
+  font-family: var(--sk-font);
+  background:
+    radial-gradient(1.4px 1.4px at 12% 18%, rgba(255, 252, 240, 0.85), transparent),
+    radial-gradient(1.2px 1.2px at 72% 12%, rgba(243, 215, 161, 0.7), transparent),
+    radial-gradient(1px 1px at 84% 46%, rgba(255, 255, 255, 0.45), transparent),
+    radial-gradient(1.3px 1.3px at 30% 70%, rgba(255, 255, 255, 0.35), transparent),
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(40, 56, 110, 0.45), transparent),
+    var(--sk-bg);
+}
+
+.sk-overlay[hidden],
+.sk-dock[hidden],
+.sk-recall[hidden],
+.sk-bubble[hidden],
+.sk-hint[hidden],
+.sk-resume[hidden] {
+  display: none !important;
+}
+
+body.sk-lock {
+  overflow: hidden;
+}
+
+.sk-skip {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  z-index: 2;
+  font: inherit;
+  font-size: 0.92rem;
+  color: var(--sk-gold-strong);
+  background: rgba(8, 12, 24, 0.55);
+  border: 1px solid var(--sk-line);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  cursor: pointer;
+}
+
+.sk-stage {
+  position: relative;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.sk-figure {
+  position: absolute;
+  left: 3vw;
+  bottom: 0;
+  height: var(--sk-sprite-welcome);
+  width: min(44vw, 460px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.sk-sprite {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  object-position: bottom center;
+  filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.45));
+}
+
+.sk-box {
+  position: relative;
+  z-index: 1;
+  margin: 0 auto 1.25rem;
+  width: min(52rem, calc(100% - 1.5rem));
+  padding: 1.15rem 1.15rem 0.85rem;
+  background: var(--sk-panel);
+  border: 1px solid var(--sk-line);
+  border-radius: var(--sk-radius);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+.sk-name {
+  position: absolute;
+  top: 0;
+  left: 1rem;
+  transform: translateY(-58%);
+  padding: 0.18rem 0.75rem;
+  background: var(--sk-gold);
+  color: var(--sk-name-ink);
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  border-radius: 0.25rem;
+}
+
+.sk-progress {
+  position: absolute;
+  top: 0;
+  right: 1rem;
+  transform: translateY(-58%);
+  color: var(--sk-gold-strong);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+}
+
+.sk-body {
+  max-height: min(46vh, 22rem);
+  overflow: auto;
+}
+
+.sk-text {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.sk-text p {
+  margin: 0 0 0.45rem;
+}
+
+.sk-text a {
+  color: var(--sk-gold-strong);
+}
+
+.sk-hint {
+  margin: 0.35rem 0 0;
+  text-align: right;
+  color: var(--sk-muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+}
+
+.sk-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+
+.sk-choice {
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.45;
+  text-align: left;
+  color: var(--sk-ink);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--sk-line-soft);
+  border-radius: 0.4rem;
+  padding: 0.55rem 0.75rem;
+  cursor: pointer;
+}
+
+.sk-choice:hover,
+.sk-choice:focus-visible {
+  border-color: var(--sk-gold);
+}
+
+.sk-missed {
+  margin: 0.4rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--sk-muted);
+  font-size: 0.92rem;
+}
+
+.sk-missed a {
+  color: var(--sk-gold-strong);
+}
+
+.sk-dock {
+  position: fixed;
+  right: 0.7rem;
+  bottom: 0.7rem;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+  max-width: min(13rem, calc(100vw - 1.2rem));
+  font-family: var(--sk-font);
+}
+
+.sk-bubble {
+  padding: 0.6rem 0.75rem;
+  background: var(--sk-panel);
+  color: var(--sk-ink);
+  border: 1px solid var(--sk-line);
+  border-radius: 0.5rem 0.5rem 0.15rem 0.5rem;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+}
+
+.sk-mini {
+  height: var(--sk-side-h);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.sk-mini img {
+  height: var(--sk-side-h);
+  width: auto;
+  display: block;
+  filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.45));
+}
+
+.sk-hide,
+.sk-recall,
+.sk-resume,
+.sk-review-btn {
+  font: inherit;
+  cursor: pointer;
+}
+
+.sk-hide,
+.sk-recall {
+  color: var(--sk-gold-strong);
+  background: rgba(8, 12, 24, 0.82);
+  border: 1px solid var(--sk-line);
+  border-radius: 999px;
+  padding: 0.28rem 0.75rem;
+  font-size: 0.88rem;
+}
+
+.sk-recall {
+  position: fixed;
+  right: 0.7rem;
+  bottom: 0.7rem;
+  z-index: 40;
+  font-family: var(--sk-font);
+}
+
+.sk-resume {
+  position: fixed;
+  left: 50%;
+  bottom: 0.8rem;
+  transform: translateX(-50%);
+  z-index: 45;
+  font-family: var(--sk-font);
+  color: var(--sk-name-ink);
+  background: var(--sk-gold);
+  border: 0;
+  border-radius: 999px;
+  padding: 0.45rem 0.95rem;
+  font-size: 0.95rem;
+}
+
+.sk-review-launch {
+  margin: 1rem 0 0;
+}
+
+.sk-review-btn {
+  color: var(--sk-gold-strong);
+  background: transparent;
+  border: 1px solid var(--sk-line);
+  border-radius: 999px;
+  padding: 0.4rem 0.95rem;
+  font-size: 1rem;
+}
+
+.note h2[id],
+.note h3[id] {
+  scroll-margin-top: 1rem;
+}
+
+body.sk-has-dock {
+  padding-bottom: 1.5rem;
+}
+
+@media (max-width: 860px) {
+  :root {
+    --sk-sprite-welcome: 36vh;
+    --sk-side-h: 118px;
+  }
+
+  .sk-figure {
+    left: 50%;
+    bottom: auto;
+    top: 0.4rem;
+    transform: translateX(-50%);
+    width: 78vw;
+    height: var(--sk-sprite-welcome);
+  }
+
+  .sk-box {
+    margin-bottom: 0.6rem;
+  }
+
+  .sk-body {
+    max-height: 48vh;
+  }
+
+  body.sk-has-dock {
+    padding-bottom: calc(var(--sk-side-h) + 2.4rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-sprite,
+  .sk-mini img {
+    transition: none;
+  }
+}

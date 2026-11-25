@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="icon" href="favicon.ico" sizes="any">
+    <link rel="stylesheet" href="mascot/mascot-theme.css">
+    <link rel="stylesheet" href="mascot/mascot.css">
   </head>
   <body>
     <a class="skip-link" href="#main">跳到主要内容</a>
@@ -42,15 +44,15 @@
       <section class="note">
         <h2>核心知识点</h2>
 
-        <h3>这个坐标系钉在你身上</h3>
+        <h3 id="l2-local">这个坐标系钉在你身上</h3>
         <p>第一课的地平圈、天顶、天底，就是这套坐标的骨架。原点在观测者。地平圈是高度 0° 的那一圈，天顶是高度 +90°，天底是高度 −90°。</p>
         <p>你转身、走动，或者只是干等着地球自转，同一颗星的地平坐标都会变。所以它适合描述「现在往哪儿看」，不适合写成星表。星表用的是下一课的赤经、赤纬。</p>
 
-        <h3>方位角</h3>
+        <h3 id="l2-az">方位角</h3>
         <p>方位角沿着地平圈量。本课规定：正北是 0°，向东增加到 90°（正东），180° 是正南，270° 是正西，再转回 360° 又是正北。</p>
         <p>有的天文书从正南起量、向西增加。那是另一种习惯，和导航罗盘差 180°。本站全部从正北向东量，和指南针一致。看到别的书时，先看它的 0° 在南还是在北。</p>
 
-        <h3>高度角</h3>
+        <h3 id="l2-alt">高度角</h3>
         <p>高度角从地平圈向上量到那颗星。地平线上是 0°，天顶是 +90°。星星落到地平线以下，高度就是负数，最低到天底的 −90°。</p>
         <p>计算里的地平是和重力垂直的真地平，不是楼和山切出来的那条线。大气还会把贴近地平的星星抬高大约半度，那是后面升落计算里的修正，这一课先用几何高度。</p>
 
@@ -174,5 +176,12 @@
       </div>
     </footer>
     <script src="horizon.js"></script>
+    <script src="mascot/mascot-persona.js"></script>
+    <script src="mascot/mascot-events.js"></script>
+    <script src="mascot/quizzes/lesson-02.js"></script>
+    <script src="mascot/mascot.js"></script>
+    <script>
+      Shenkuiye.start({ root: "mascot/", page: "lesson", lesson: "lesson-02" });
+    </script>
   </body>
 </html>

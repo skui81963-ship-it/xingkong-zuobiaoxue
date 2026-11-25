@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="icon" href="favicon.ico" sizes="any">
+    <link rel="stylesheet" href="mascot/mascot-theme.css">
+    <link rel="stylesheet" href="mascot/mascot.css">
   </head>
   <body>
     <a class="skip-link" href="#main">跳到主要内容</a>
@@ -129,5 +131,11 @@
         <p>坐标是 2000 年的。下一页说明为什么不能把它们直接当成今晚的精密位置，也不能拿去算行星。</p>
       </div>
     </footer>
+    <script src="mascot/mascot-persona.js"></script>
+    <script src="mascot/mascot-events.js"></script>
+    <script src="mascot/mascot.js"></script>
+    <script>
+      Shenkuiye.start({ root: "mascot/", page: "companion" });
+    </script>
   </body>
 </html>

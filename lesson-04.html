@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="icon" href="favicon.ico" sizes="any">
+    <link rel="stylesheet" href="mascot/mascot-theme.css">
+    <link rel="stylesheet" href="mascot/mascot.css">
   </head>
   <body>
     <a class="skip-link" href="#main">跳到主要内容</a>
@@ -42,27 +44,27 @@
       <section class="note">
         <h2>核心知识点</h2>
 
-        <h3>太阳时和恒星时不是同一只钟</h3>
+        <h3 id="l4-clocks">太阳时和恒星时不是同一只钟</h3>
         <p>日常的 24 小时对准太阳：太阳连续两次中天，平均是 24 小时，叫一个太阳日。星星对准的是春分点：春分点连续两次中天，是一个恒星日，大约 23 小时 56 分 4 秒。</p>
         <p>差大约 3 分 56 秒，是因为地球在自转的同时还在公转。相对太阳，地球要多转将近 1°，才再次把太阳送回子午圈。相对星星则不用这多出来的 1°。所以同一颗星每天早大约 4 分钟升起。</p>
         <p>恒星时就是「春分点的时角」，通常写成 0 到 24 时。地方恒星时等于 0 时，表示春分点正在你的子午圈上；它等于织女的赤经时，织女就正在子午圈上。</p>
 
-        <h3>先把当地时间换成世界时</h3>
+        <h3 id="l4-ut">先把当地时间换成世界时</h3>
         <p>公式里的恒星时吃的是世界时（UT），不是北京时间。北京用东八区：当地时间 = 世界时 + 8 小时，所以世界时 = 当地时间 − 8 小时。</p>
         <p class="formula">世界时 = 当地时间 − 时区（东经时区为正）</p>
         <p>经度以后东经为正、西经为负，和地图一致。有的老书把西经写成正数，读公式前先看它的正负号。</p>
 
-        <h3>儒略日</h3>
+        <h3 id="l4-jd">儒略日</h3>
         <p>儒略日（JD）是从很早的一个中午连续数下来的日数，带小数。天文学用它，是为了少处理「月有几天、是否闰年」。2000 年 1 月 1 日 12:00 世界时的儒略日正好是 2451545.0，这个瞬间叫 J2000.0。</p>
         <p>公历日期换儒略日，用 Meeus《天文算法》第 7 章的做法。1 月和 2 月要先当成上一年的 13 月、14 月。第六课的脚本里有每一项的注释。手算时可以直接用下面例题里已经算出的 JD。</p>
 
-        <h3>格林尼治平恒星时</h3>
+        <h3 id="l4-gmst">格林尼治平恒星时</h3>
         <p>格林尼治平恒星时 GMST，是经度 0° 处的恒星时。平，指还没加章动那一点点抖动。设</p>
         <p class="formula">D = JD − 2451545，&nbsp; T = D / 36525</p>
         <p class="formula">GMST = 280.46061837° + 360.98564736629° × D + 0.000387933° × T² − T³ / 38710000</p>
         <p>结果是度。除以 15 得到时。算出来若超过 360°，就反复减去 360°，直到落进 0° 到 360°。第一项是 J2000.0 的起点，第二项是地球相对恒星转动的速度，后面两项很小。</p>
 
-        <h3>地方恒星时和时角</h3>
+        <h3 id="l4-lst">地方恒星时和时角</h3>
         <p class="formula">地方恒星时 LST = GMST + 经度（东经为正，单位都用度）</p>
         <p class="formula">时角 H = LST − 赤经</p>
         <p>时角也收成 −180° 到 +180° 比较好读：负数表示星星还在子午圈东边，正数表示已经偏西。H = 0 就是上中天。</p>
@@ -143,5 +145,12 @@
         <p>时角有了。下一课把它和纬度、赤纬合成你抬头时的高度和方位。</p>
       </div>
     </footer>
+    <script src="mascot/mascot-persona.js"></script>
+    <script src="mascot/mascot-events.js"></script>
+    <script src="mascot/quizzes/lesson-04.js"></script>
+    <script src="mascot/mascot.js"></script>
+    <script>
+      Shenkuiye.start({ root: "mascot/", page: "lesson", lesson: "lesson-04" });
+    </script>
   </body>
 </html>
