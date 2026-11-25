@@ -198,6 +198,19 @@ var StarGazeAstro = (function () {
     return { forward: forward, right: right, up: up };
   }
 
+  /*
+    把目光转到某个高度、方位。
+    屏幕上方尽量朝天顶，所以北还在上头附近。
+    已经正对着天顶时，方位没有意义，改成和默认视角一样：北在上方。
+  */
+  function lookAtAltAz(altDeg, azDeg) {
+    var forward = enu(altDeg, azDeg);
+    var upRef = Math.abs(forward[2]) > 0.96 ? [0, 1, 0] : [0, 0, 1];
+    var right = norm(cross(forward, upRef));
+    var up = norm(cross(right, forward));
+    return { forward: forward, right: right, up: up };
+  }
+
   /* 目光中心的高度和方位，用来在画面上写「现在朝向哪里」。天顶附近方位不稳定。 */
   function basisAltAz(basis) {
     var alt = Math.asin(clamp(basis.forward[2], -1, 1)) * 180 / Math.PI;
@@ -426,6 +439,7 @@ var StarGazeAstro = (function () {
     equatorialVector: equatorialVector,
     zenithVector: zenithVector,
     defaultBasis: defaultBasis,
+    lookAtAltAz: lookAtAltAz,
     dragBasis: dragBasis,
     basisAltAz: basisAltAz,
     orientationBasis: orientationBasis,

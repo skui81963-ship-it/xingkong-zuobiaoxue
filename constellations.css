@@ -1,0 +1,68 @@
+/*
+  constellations.css
+  ------------------
+  实用星座模拟多出来的布局：搜索框、88 个星座的清单、地面和银河的滑块。
+  颜色仍用 constellations-theme.css 里的变量。盒子怎么排，和虚拟观星共用 stargazing.css。
+*/
+
+.sg-checks-scroll {
+  max-height: 16.5rem;
+  overflow: auto;
+  padding-right: 0.15rem;
+}
+
+#sg-cons li {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  min-height: 1.9rem;
+  border-radius: 6px;
+}
+
+#sg-cons li.is-hidden {
+  display: none;
+}
+
+#sg-cons li.is-current {
+  outline: 1px solid var(--sg-focus);
+}
+
+.sg-cons-jump {
+  flex: 1;
+  margin: 0;
+  padding: 0.2rem 0.15rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sg-cons-jump:hover,
+.sg-cons-jump:focus-visible {
+  color: var(--sg-text-strong);
+}
+
+.sg-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin-top: 0.45rem;
+  font-size: 0.92rem;
+}
+
+.sg-slider-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.sg-slider-top span {
+  color: var(--sg-text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.sg-panel .sg-note {
+  overflow-wrap: anywhere;
+}

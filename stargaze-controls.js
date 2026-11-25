@@ -67,6 +67,14 @@ var StarGazeControls = (function () {
       showHorizonGrid: false,
       showEquatorGrid: true,
       showLabels: true,
+      /* 下面几项只有实用星座模拟的页面会改。虚拟观星不放这些控件，就保持这里的默认。 */
+      groundOn: true,
+      groundAlpha: 1,
+      showMilkyWay: false,
+      milkyAlpha: 0.45,
+      showBounds: false,
+      showConsNames: false,
+      highlightCons: null,
       gyro: false,
       gyroSeen: false,
       gyroAbsolute: false,
@@ -92,6 +100,113 @@ var StarGazeControls = (function () {
     state.showHorizonGrid = $("sg-grid-h").checked;
     state.showEquatorGrid = $("sg-grid-e").checked;
     state.showLabels = $("sg-labels").checked;
+    var groundBox = $("sg-ground");
+    if (groundBox) state.groundOn = groundBox.checked;
+    var groundSlider = $("sg-ground-alpha");
+    if (groundSlider) state.groundAlpha = clamp(Number(groundSlider.value) / 100, 0, 1);
+    var mwBox = $("sg-mw");
+    if (mwBox) state.showMilkyWay = mwBox.checked;
+    var mwSlider = $("sg-mw-alpha");
+    if (mwSlider) state.milkyAlpha = clamp(Number(mwSlider.value) / 100, 0, 1);
+    var boundsBox = $("sg-bounds");
+    if (boundsBox) state.showBounds = boundsBox.checked;
+    var namesBox = $("sg-cons-names");
+    if (namesBox) state.showConsNames = namesBox.checked;
+    updateSliderLabels();
+  }
+
+  function updateSliderLabels() {
+    var gs = $("sg-ground-alpha");
+    var gv = $("sg-ground-alpha-val");
+    if (gs && gv) gv.textContent = gs.value + "%";
+    var ms = $("sg-mw-alpha");
+    var mv = $("sg-mw-alpha-val");
+    if (ms && mv) mv.textContent = ms.value + "%";
+  }
+
+  function foldName(s) {
+    return String(s || "").toLowerCase()
+      .replace(/ö/g, "o").replace(/é/g, "e").replace(/á/g, "a").replace(/ü/g, "u")
+      .replace(/\s+/g, "");
+  }
+
+  function applySearch() {
+    var input = $("sg-find");
+    var note = $("sg-find-note");
+    if (!input) return null;
+    var q = foldName(input.value.trim());
+    var items = document.querySelectorAll("#sg-cons li");
+    var n = 0;
+    var first = null;
+    var i;
+    for (i = 0; i < items.length; i++) {
+      var blob = foldName(
+        (items[i].getAttribute("data-name") || "") + " " +
+        (items[i].getAttribute("data-latin") || "") + " " +
+        (items[i].getAttribute("data-abbr") || "") + " " +
+        (items[i].getAttribute("data-alias") || "")
+      );
+      var ok = !q || blob.indexOf(q) !== -1;
+      if (ok) {
+        items[i].classList.remove("is-hidden");
+        n += 1;
+        if (!first) first = items[i];
+      } else {
+        items[i].classList.add("is-hidden");
+      }
+    }
+    if (note) {
+      if (!q) note.textContent = "点星座的名字，画面会转向它。";
+      else if (!n) note.textContent = "没有找到这个星座。可以试中文名或拉丁名。";
+      else note.textContent = "找到 " + n + " 个。点名字可以把星座移到画面中央。";
+    }
+    return first;
+  }
+
+  function markCurrent(id) {
+    var rows = document.querySelectorAll("#sg-cons li");
+    var i;
+    for (i = 0; i < rows.length; i++) rows[i].classList.remove("is-current");
+    var box = document.querySelector('#sg-cons input[data-cons="' + id + '"]');
+    if (!box) return;
+    var li = box.parentNode;
+    while (li && li.tagName !== "LI") li = li.parentNode;
+    if (li) {
+      li.classList.add("is-current");
+      if (li.scrollIntoView) li.scrollIntoView({ block: "nearest" });
+    }
+  }
+
+  function centerConstellation(id) {
+    if (!catalog || !catalog.byId || !catalog.byId[id]) return;
+    var meta = catalog.byId[id];
+    var box = document.querySelector('#sg-cons input[data-cons="' + id + '"]');
+    if (box && !box.checked) {
+      box.checked = true;
+      readFilters();
+    }
+    state.highlightCons = id;
+    markCurrent(id);
+    var lst = StarGazeAstro.lstDegrees(state.utcMs, state.lon);
+    state.lst = lst;
+    if (state.view === "outside") {
+      var v = StarGazeAstro.equatorialVector(meta.ra, meta.dec, lst);
+      state.orbitEl = Math.asin(clamp(v[2], -1, 1)) * 180 / Math.PI;
+      state.orbitAz = Math.atan2(v[1], v[0]) * 180 / Math.PI;
+      status("已从天球外面对准" + meta.name + "（" + meta.latin + "）。");
+      return;
+    }
+    if (state.gyro) {
+      status(meta.name + "已标出。陀螺仪开着时画面跟着手机，先关掉陀螺仪再自动转向。");
+      return;
+    }
+    var hor = StarGazeAstro.horizontal(meta.ra, meta.dec, lst, state.lat);
+    state.basis = StarGazeAstro.lookAtAltAz(hor.alt, hor.az);
+    if (hor.alt < 0 && state.groundOn && state.groundAlpha > 0.95) {
+      status(meta.name + "在地平线以下（高度 " + SkyCalc.formatDeg(hor.alt, 0) + "）。把地面关掉或调透明就能看到。");
+    } else {
+      status("已把" + meta.name + "（" + meta.latin + "）移到画面中央。");
+    }
   }
 
   /* keepClock：改时区时，钟面上的「20:00」保持 20:00，世界时跟着改。 */
@@ -204,7 +319,7 @@ var StarGazeControls = (function () {
     starEl.textContent = describeHit(state.picked);
 
     var vega = starBySky("vega");
-    if (vega) {
+    if (vega && vegaEl) {
       var vh = StarGazeAstro.horizontal(vega.ra, vega.dec, state.lst, state.lat);
       vegaEl.innerHTML = "<strong>织女此刻</strong> 高度 " + SkyCalc.formatDeg(vh.alt, 2) +
         "，方位 " + SkyCalc.formatDeg(vh.az, 2) + "（" + SkyCalc.compass(vh.az) +
@@ -427,6 +542,34 @@ var StarGazeControls = (function () {
       state.view = q.get("view");
     }
     if (q.get("zoom")) state.zoom = clamp(parseFloat(q.get("zoom")) || 1, 0.55, 6.5);
+    if (q.get("look")) {
+      var lookParts = q.get("look").split(",");
+      var lookAlt = parseFloat(lookParts[0]);
+      var lookAz = parseFloat(lookParts[1]);
+      if (isFinite(lookAlt) && isFinite(lookAz)) {
+        state.basis = StarGazeAstro.lookAtAltAz(lookAlt, lookAz);
+      }
+    }
+    if (q.get("ground") != null && $("sg-ground")) {
+      var g = parseFloat(q.get("ground"));
+      if (isFinite(g)) {
+        $("sg-ground").checked = g > 0.001;
+        if ($("sg-ground-alpha")) $("sg-ground-alpha").value = String(Math.round(clamp(g, 0, 1) * 100));
+      }
+    }
+    if (q.get("mw") != null && $("sg-mw")) {
+      var mw = parseFloat(q.get("mw"));
+      if (isFinite(mw)) {
+        $("sg-mw").checked = mw > 0.001;
+        if ($("sg-mw-alpha")) $("sg-mw-alpha").value = String(Math.round(clamp(mw, 0, 1) * 100));
+      }
+    }
+    if (q.get("bounds") != null && $("sg-bounds")) {
+      $("sg-bounds").checked = q.get("bounds") === "1";
+    }
+    if (q.get("names") != null && $("sg-cons-names")) {
+      $("sg-cons-names").checked = q.get("names") !== "0";
+    }
     if (q.get("speed")) state.speed = Number(q.get("speed")) || 1;
     if (q.get("play") === "1") state.playing = true;
     if (q.get("orbitAz")) state.orbitAz = parseFloat(q.get("orbitAz"));
@@ -540,13 +683,50 @@ var StarGazeControls = (function () {
       if (!t) return;
       if (t.hasAttribute("data-cons") || t.hasAttribute("data-aster") ||
           t.id === "sg-const-lines" || t.id === "sg-horizon" ||
-          t.id === "sg-grid-h" || t.id === "sg-grid-e" || t.id === "sg-labels") {
+          t.id === "sg-grid-h" || t.id === "sg-grid-e" || t.id === "sg-labels" ||
+          t.id === "sg-ground" || t.id === "sg-mw" || t.id === "sg-bounds" ||
+          t.id === "sg-cons-names") {
         readFilters();
       }
     });
 
     gyroBtn.addEventListener("click", function () {
       setGyro(!state.gyro);
+    });
+
+    function bindRange(id, toggleId) {
+      var el = $(id);
+      if (!el) return;
+      el.addEventListener("input", function () {
+        var box = toggleId ? $(toggleId) : null;
+        if (box && !box.checked) box.checked = true;
+        readFilters();
+      });
+    }
+    bindRange("sg-ground-alpha", "sg-ground");
+    bindRange("sg-mw-alpha", "sg-mw");
+
+    var findInput = $("sg-find");
+    if (findInput) {
+      findInput.addEventListener("input", applySearch);
+      findInput.addEventListener("keydown", function (e) {
+        if (e.key !== "Enter") return;
+        e.preventDefault();
+        var first = applySearch();
+        if (!first) return;
+        var jump = first.querySelector("[data-jump]");
+        if (jump) centerConstellation(jump.getAttribute("data-jump"));
+      });
+    }
+    $("sg-form").addEventListener("click", function (e) {
+      var node = e.target;
+      while (node && node !== $("sg-form")) {
+        if (node.getAttribute && node.getAttribute("data-jump")) {
+          centerConstellation(node.getAttribute("data-jump"));
+          return;
+        }
+        node = node.parentNode;
+      }
     });
 
     canvas.addEventListener("pointerdown", onPointerDown);
@@ -614,13 +794,26 @@ var StarGazeControls = (function () {
     playBtn = $("sg-play");
     gyroBtn = $("sg-gyro");
 
-    catalog = StarGazeStars.prepare();
+    var iau = document.body && document.body.getAttribute("data-sky") === "iau" &&
+      typeof StarGazeIAU !== "undefined";
+    if (iau) {
+      var list = $("sg-cons");
+      if (list) StarGazeIAU.fillList(list);
+      catalog = StarGazeIAU.prepare();
+    } else {
+      catalog = StarGazeStars.prepare();
+    }
     state = defaultState();
     state.catalog = catalog;
     readFilters();
     readPlace(false);
     applyQuery();
     bind();
+    if (iau) applySearch();
+    if (typeof URLSearchParams === "function") {
+      var focus = new URLSearchParams(window.location.search).get("focus");
+      if (focus && catalog.byId && catalog.byId[focus]) centerConstellation(focus);
+    }
 
     var last = 0;
     function frame(t) {
