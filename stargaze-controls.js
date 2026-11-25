@@ -311,15 +311,27 @@ var StarGazeControls = (function () {
     if (!state.gyro) return;
     if (e.absolute === false && state.gyroAbsolute) return;
     if (e.absolute === true) state.gyroAbsolute = true;
-    if (e.beta == null || e.gamma == null) return;
-    var alpha = e.alpha;
+    if (e.beta == null || e.gamma == null || e.alpha == null) return;
+    /*
+      罗盘角（webkitCompassHeading）不要直接替换 alpha。
+      手机朝南再往天顶抬时，这个读数会在南北之间跳 180°，
+      写进转角后画面就跟着来回翻。orientDevice 只在读数稳定时用它修正「哪边是北」。
+    */
+    var compass = null;
     if (typeof e.webkitCompassHeading === "number" && !isNaN(e.webkitCompassHeading)) {
-      alpha = 360 - e.webkitCompassHeading;
+      compass = e.webkitCompassHeading;
     }
-    if (alpha == null || isNaN(alpha)) return;
+    var pose = StarGazeAstro.orientDevice({
+      alpha: e.alpha,
+      beta: e.beta,
+      gamma: e.gamma,
+      screenAngle: screenAngle(),
+      compassHeading: compass
+    }, state.gyroPose);
+    if (!pose || !pose.basis) return;
     state.gyroSeen = true;
-    var basis = StarGazeAstro.orientationBasis(alpha, e.beta, e.gamma);
-    state.basis = StarGazeAstro.applyScreenAngle(basis, screenAngle());
+    state.gyroPose = pose;
+    state.basis = pose.basis;
   }
 
   function stopGyroListen() {
@@ -334,6 +346,7 @@ var StarGazeControls = (function () {
   function setGyro(on) {
     if (!on) {
       state.gyro = false;
+      state.gyroPose = null;
       stopGyroListen();
       gyroBtn.setAttribute("aria-pressed", "false");
       return;
@@ -350,6 +363,7 @@ var StarGazeControls = (function () {
       state.gyro = true;
       state.gyroSeen = false;
       state.gyroAbsolute = false;
+      state.gyroPose = null;
       window.addEventListener("deviceorientation", onOrient, true);
       try {
         window.addEventListener("deviceorientationabsolute", onOrient, true);

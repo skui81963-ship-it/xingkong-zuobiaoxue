@@ -206,10 +206,61 @@ var StarGazeAstro = (function () {
   }
 
   /*
+    把角度收进 −180° 到 180°。
+    359° 和 1° 其实只差 2°，不能当成相差 358°。后面做平均时要用这个最短的差值，
+    否则 359° 和 0° 会被平均成大约 180°，画面就转到反方向去了。
+  */
+  function wrap180(deg) {
+    var x = deg % 360;
+    if (x > 180) x -= 360;
+    if (x <= -180) x += 360;
+    return x;
+  }
+
+  /* 从 prev 走向 next，只走最短的那段弧。t 是 0 到 1。 */
+  function smoothAngle(prev, next, t) {
+    return prev + t * wrap180(next - prev);
+  }
+
+  function angleBetween(a, b) {
+    var d = clamp(dot(a, b), -1, 1);
+    return Math.acos(d) * 180 / Math.PI;
+  }
+
+  /*
+    用屏幕「上」那条轴确定画面怎么转，而不是只用方位角重造一个画面。
+    快到天顶时，方位角会失去意义：目光几乎竖直，东、北两个分量都接近 0，
+    一点点噪声就会让方位从正南跳成正北。屏幕上沿这时仍指着地平上的一个方向，
+    用它来固定旋转，画面才不会翻 180°。
+  */
+  function orthonormalize(basis) {
+    var forward = norm(basis.forward);
+    var up = basis.up;
+    var along = dot(up, forward);
+    up = [up[0] - forward[0] * along, up[1] - forward[1] * along, up[2] - forward[2] * along];
+    var len = Math.sqrt(up[0] * up[0] + up[1] * up[1] + up[2] * up[2]);
+    if (len < 1e-6) {
+      up = [0, 1, 0];
+      along = dot(up, forward);
+      up = [up[0] - forward[0] * along, up[1] - forward[1] * along, up[2] - forward[2] * along];
+      len = Math.sqrt(up[0] * up[0] + up[1] * up[1] + up[2] * up[2]);
+      if (len < 1e-6) up = [1, 0, 0];
+    }
+    up = norm(up);
+    var right = norm(cross(forward, up));
+    up = norm(cross(right, forward));
+    return { forward: forward, right: right, up: up };
+  }
+
+  /*
     手机方向传感器 → 和地面视角同一套目光方向。
-    遵循 W3C 设备方向：alpha、beta、gamma 是一组转动角。
-    人盯着屏幕、把手机举向天空时，天空在手机背面那一侧，所以目光取屏幕法线的反方向。
+    遵循 W3C 设备方向：先绕竖直轴转 alpha，再绕手机的右轴转 beta，最后绕手机的上轴转 gamma。
+    人盯着屏幕、把手机举向天空时，天空在手机背面那一侧，所以目光取屏幕法线的反方向（−Z）。
     算出来的 right / up / forward 和 defaultBasis 用的是同一套东、北、上。
+
+    不要把罗盘读数直接写进 alpha。手机从正南往天顶抬时，罗盘角会在两个相差 180° 的数之间跳，
+    写进 alpha 后，画面就会在正南和正北之间来回翻。罗盘只用来慢慢修正「哪边是北」，
+    而且天顶附近或读数突然跳了 180° 时，沿用上一次稳定的修正。
   */
   function orientationBasis(alphaDeg, betaDeg, gammaDeg) {
     var d2r = Math.PI / 180;
@@ -258,11 +309,103 @@ var StarGazeAstro = (function () {
       -right[1] * s + up[1] * c,
       -right[2] * s + up[2] * c
     ];
-    return {
+    return orthonormalize({
       forward: basis.forward,
-      right: norm(vRight),
-      up: norm(vUp)
+      right: vRight,
+      up: vUp
+    });
+  }
+
+  function isFiniteNumber(n) {
+    return typeof n === "number" && isFinite(n);
+  }
+
+  /*
+    把一次传感器读数收成稳定的目光。
+    sample 里有 alpha、beta、gamma，还可以有 screenAngle（屏幕横过来的角度）
+    和 compassHeading（iOS 的 webkitCompassHeading，从北顺时针）。
+    prev 是上一帧的结果。没有上一帧时传 null。
+
+    天顶附近方位角没有稳定的定义，画面的旋转改由手机上沿决定。
+    新的一帧如果和上一帧差了几十度以上，就当成坏读数丢掉：
+    传感器大约每秒几十次，真实的抬头不会一下子转过 40°，
+    但错误的欧拉角分解会突然差 180°。
+  */
+  function orientDevice(sample, prev) {
+    prev = prev || {};
+    if (!isFiniteNumber(sample.alpha) || !isFiniteNumber(sample.beta) || !isFiniteNumber(sample.gamma)) {
+      if (prev.basis) return prev;
+      return null;
+    }
+    var alpha = sample.alpha;
+    var beta = sample.beta;
+    var gamma = sample.gamma;
+    var screenAngle = isFiniteNumber(sample.screenAngle) ? sample.screenAngle : 0;
+    var compass = sample.compassHeading;
+    var yawOffset = prev.yawOffset;
+    var haveLock = isFiniteNumber(yawOffset);
+    if (!haveLock) yawOffset = 0;
+    var acceptedCompass = prev.compass;
+
+    if (isFiniteNumber(compass)) {
+      /* 罗盘从北顺时针量。W3C 的 alpha 相反，所以绝对 alpha 大约是 360° − 罗盘角。 */
+      var alphaFromCompass = SkyCalc.norm360(360 - compass);
+      var proposed = wrap180(alphaFromCompass - alpha);
+      var previewAlpha = SkyCalc.norm360(alpha + (haveLock ? yawOffset : proposed));
+      var preview = orientationBasis(previewAlpha, beta, gamma);
+      var altNow = Math.asin(clamp(preview.forward[2], -1, 1)) * 180 / Math.PI;
+      var horiz = Math.sqrt(preview.forward[0] * preview.forward[0] + preview.forward[1] * preview.forward[1]);
+      var nearZenith = horiz < 0.34 || Math.abs(altNow) > 68;
+      var compassJump = isFiniteNumber(prev.compass) && Math.abs(wrap180(compass - prev.compass)) > 25;
+      var offsetJump = haveLock && Math.abs(wrap180(proposed - yawOffset)) > 35;
+      if (!nearZenith && !compassJump && !offsetJump) {
+        yawOffset = haveLock ? smoothAngle(yawOffset, proposed, 0.45) : proposed;
+        haveLock = true;
+        acceptedCompass = compass;
+      }
+    }
+
+    var basis = applyScreenAngle(
+      orientationBasis(SkyCalc.norm360(alpha + yawOffset), beta, gamma),
+      screenAngle
+    );
+
+    if (prev.basis) {
+      var jump = angleBetween(prev.basis.forward, basis.forward);
+      if (jump > 40) {
+        return {
+          basis: prev.basis,
+          yawOffset: prev.yawOffset,
+          compass: prev.compass,
+          rejected: true
+        };
+      }
+      basis = blendBasis(prev.basis, basis, 0.8);
+    }
+
+    return {
+      basis: basis,
+      yawOffset: haveLock ? yawOffset : null,
+      compass: acceptedCompass,
+      rejected: false
     };
+  }
+
+  /* 在球面上从 a 走向 b，走短弧。t 越接近 1，越贴近新的读数。 */
+  function blendBasis(a, b, t) {
+    function mix(u, v) {
+      if (dot(u, v) < 0) v = scale(v, -1);
+      return norm([
+        u[0] * (1 - t) + v[0] * t,
+        u[1] * (1 - t) + v[1] * t,
+        u[2] * (1 - t) + v[2] * t
+      ]);
+    }
+    return orthonormalize({
+      forward: mix(a.forward, b.forward),
+      up: mix(a.up, b.up),
+      right: mix(a.right, b.right)
+    });
   }
 
   return {
@@ -286,6 +429,9 @@ var StarGazeAstro = (function () {
     dragBasis: dragBasis,
     basisAltAz: basisAltAz,
     orientationBasis: orientationBasis,
-    applyScreenAngle: applyScreenAngle
+    applyScreenAngle: applyScreenAngle,
+    wrap180: wrap180,
+    smoothAngle: smoothAngle,
+    orientDevice: orientDevice
   };
 })();
