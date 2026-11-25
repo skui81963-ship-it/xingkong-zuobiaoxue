@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<!--
+  constellations.html
+  实用星座模拟。全天 88 个星座，和虚拟观星不是同一页。
+  虚拟观星仍只练那 14 个季节星座。这一页用来认全天的棍棒图。
+
+  算数仍用 stargaze-astro.js（和第六课同一套公式）。
+  星表、连线和边界在 constellations-data.js，画图在 stargaze-render.js，
+  按钮和时间在 stargaze-controls.js。颜色在 constellations-theme.css。
+  直接打开这个文件也能用，不需要构建，也不需要联网。
+-->
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>实用星座模拟 · 星空坐标学</title>
+    <meta name="description" content="全天 88 个星座的棍棒图、中文名和边界。可调地面透明和银河，按名字搜索并转到那个星座。">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="constellations-theme.css">
+    <link rel="stylesheet" href="stargazing.css">
+    <link rel="stylesheet" href="constellations.css">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  </head>
+  <body data-sky="iau">
+    <a class="skip-link" href="#sky">跳到星图</a>
+    <header class="site-header">
+      <div class="wrap sg-head-wrap">
+        <a class="brand" href="index.html">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path fill="#e6c27a" d="M8 0.8 L9.1 6.4 L15.2 8 L9.1 9.6 L8 15.2 L6.9 9.6 L0.8 8 L6.9 6.4 Z"/>
+          </svg>
+          星空坐标学
+        </a>
+        <p class="kicker">练习</p>
+        <h1>实用星座模拟</h1>
+        <p class="lead">
+          全天 88 个国际天文学联合会星座。每个星座只画组成常用棍棒图的那些星，不铺暗星，也不画星云。可以站在地面抬头看，也可以退到天球外面看整球。坐标用 J2000.0，不算岁差，和第六课、虚拟观星是同一套公式。
+        </p>
+      </div>
+    </header>
+
+    <main class="sg-app" id="main">
+      <div class="sg-stage">
+        <canvas id="sky" width="800" height="600" aria-label="全天星座。拖动可以转向，滚轮或双指可以缩放。"></canvas>
+        <div class="sg-hud">
+          <p id="sg-time">模拟时间</p>
+          <p id="sg-lst">地方恒星时</p>
+          <p id="sg-look">朝向</p>
+          <p id="sg-star"></p>
+        </div>
+        <p id="sg-status" class="sg-status" role="status"></p>
+      </div>
+
+      <form id="sg-form" class="sg-panel" action="#">
+        <h2>视角</h2>
+        <div class="sg-row" role="group" aria-label="视角">
+          <button type="button" class="sg-btn" id="sg-view-ground" aria-pressed="true">地面视角</button>
+          <button type="button" class="sg-btn" id="sg-view-outside" aria-pressed="false">天球外观</button>
+          <button type="button" class="sg-btn" id="sg-reset">重置视角</button>
+        </div>
+
+        <h2>地点</h2>
+        <div class="sg-grid">
+          <label class="sg-field sg-field-wide">
+            城市
+            <select id="sg-city">
+              <option value="custom">自定义</option>
+              <option value="beijing" data-lat="40" data-lon="116.4" data-tz="8" selected>北京</option>
+              <option value="shanghai" data-lat="31.2" data-lon="121.5" data-tz="8">上海</option>
+              <option value="guangzhou" data-lat="23.1" data-lon="113.3" data-tz="8">广州</option>
+              <option value="shenzhen" data-lat="22.54" data-lon="114.06" data-tz="8">深圳</option>
+              <option value="chengdu" data-lat="30.7" data-lon="104.1" data-tz="8">成都</option>
+              <option value="chongqing" data-lat="29.56" data-lon="106.55" data-tz="8">重庆</option>
+              <option value="xian" data-lat="34.26" data-lon="108.94" data-tz="8">西安</option>
+              <option value="wuhan" data-lat="30.59" data-lon="114.31" data-tz="8">武汉</option>
+              <option value="nanjing" data-lat="32.06" data-lon="118.8" data-tz="8">南京</option>
+              <option value="hangzhou" data-lat="30.27" data-lon="120.15" data-tz="8">杭州</option>
+              <option value="kunming" data-lat="25.04" data-lon="102.71" data-tz="8">昆明</option>
+              <option value="lasa" data-lat="29.65" data-lon="91.14" data-tz="8">拉萨</option>
+              <option value="wulumuqi" data-lat="43.8" data-lon="87.6" data-tz="8">乌鲁木齐</option>
+              <option value="haerbin" data-lat="45.75" data-lon="126.63" data-tz="8">哈尔滨</option>
+              <option value="huhehaote" data-lat="40.84" data-lon="111.75" data-tz="8">呼和浩特</option>
+              <option value="lanzhou" data-lat="36.06" data-lon="103.83" data-tz="8">兰州</option>
+              <option value="haikou" data-lat="20.04" data-lon="110.2" data-tz="8">海口</option>
+              <option value="mohe" data-lat="52.97" data-lon="122.54" data-tz="8">漠河</option>
+              <option value="hongkong" data-lat="22.32" data-lon="114.17" data-tz="8">香港</option>
+              <option value="taibei" data-lat="25.04" data-lon="121.56" data-tz="8">台北</option>
+              <option value="tokyo" data-lat="35.68" data-lon="139.76" data-tz="9">东京</option>
+              <option value="singapore" data-lat="1.35" data-lon="103.82" data-tz="8">新加坡</option>
+              <option value="sydney" data-lat="-33.87" data-lon="151.21" data-tz="10">悉尼</option>
+              <option value="london" data-lat="51.5" data-lon="-0.12" data-tz="0">伦敦</option>
+              <option value="paris" data-lat="48.86" data-lon="2.35" data-tz="1">巴黎</option>
+              <option value="cairo" data-lat="30.04" data-lon="31.24" data-tz="2">开罗</option>
+              <option value="moscow" data-lat="55.76" data-lon="37.62" data-tz="3">莫斯科</option>
+              <option value="newyork" data-lat="40.71" data-lon="-74.01" data-tz="-5">纽约</option>
+              <option value="losangeles" data-lat="34.05" data-lon="-118.24" data-tz="-8">洛杉矶</option>
+              <option value="capetown" data-lat="-33.93" data-lon="18.42" data-tz="2">开普敦</option>
+              <option value="reykjavik" data-lat="64.15" data-lon="-21.94" data-tz="0">雷克雅未克</option>
+            </select>
+          </label>
+          <label class="sg-field">纬度 °
+            <input id="sg-lat" type="number" step="0.01" min="-90" max="90" value="40">
+          </label>
+          <label class="sg-field">经度 °
+            <input id="sg-lon" type="number" step="0.01" min="-180" max="180" value="116.4">
+          </label>
+          <label class="sg-field sg-field-wide">时区（小时，东正西负）
+            <input id="sg-tz" type="number" step="0.5" min="-12" max="14" value="8">
+          </label>
+        </div>
+        <div class="sg-row sg-follow">
+          <button type="button" class="sg-btn" id="sg-locate">使用我的位置</button>
+        </div>
+        <p class="sg-note">时区用标准时，不含夏令时，和第六课一样。改城市时，钟面上的当地时间保持不变。</p>
+
+        <h2>时间</h2>
+        <div class="sg-row" role="group" aria-label="播放">
+          <button type="button" class="sg-btn" id="sg-play" aria-pressed="false">播放</button>
+          <button type="button" class="sg-btn" id="sg-speed-1" data-speed="1" aria-pressed="true">1×</button>
+          <button type="button" class="sg-btn" id="sg-speed-60" data-speed="60" aria-pressed="false">60×</button>
+          <button type="button" class="sg-btn" id="sg-speed-600" data-speed="600" aria-pressed="false">600×</button>
+          <button type="button" class="sg-btn" id="sg-speed-3600" data-speed="3600" aria-pressed="false">3600×</button>
+          <button type="button" class="sg-btn" id="sg-now">回到现在</button>
+        </div>
+        <label class="sg-field sg-follow">跳到当地时间
+          <input id="sg-time-input" type="datetime-local" step="1">
+        </label>
+        <p class="sg-note">1× 是真实速度。60× 每秒走一分钟，600× 每秒走十分钟，3600× 每秒走一小时。打开页面时用的是现在的时间。</p>
+
+        <h2>星座</h2>
+        <label class="sg-field">按中文或拉丁名查找
+          <input id="sg-find" type="search" placeholder="例如 猎户 或 Orion" autocomplete="off">
+        </label>
+        <p id="sg-find-note" class="sg-note">点星座的名字，画面会转向它。</p>
+        <div class="sg-row sg-follow">
+          <button type="button" class="sg-btn" id="sg-cons-all">全选</button>
+          <button type="button" class="sg-btn" id="sg-cons-none">全不选</button>
+        </div>
+        <ul class="sg-checks sg-follow">
+          <li><label class="sg-check"><input type="checkbox" id="sg-const-lines" checked>星座连线</label></li>
+          <li><label class="sg-check"><input type="checkbox" id="sg-cons-names" checked>星座名称</label></li>
+          <li><label class="sg-check"><input type="checkbox" id="sg-bounds">星座边界</label></li>
+        </ul>
+        <ul class="sg-checks sg-checks-scroll sg-follow" id="sg-cons"></ul>
+        <p class="sg-note">取消勾选就藏起那个星座。全选、全不选包括搜索时被藏起来的星座。巨蛇座有头、尾两截，仍算一个星座。</p>
+
+        <h2>地面和银河</h2>
+        <label class="sg-check">
+          <input type="checkbox" id="sg-ground" checked>
+          显示地面
+        </label>
+        <label class="sg-slider">
+          <span class="sg-slider-top">地面不透明度 <span id="sg-ground-alpha-val">100%</span></span>
+          <input id="sg-ground-alpha" type="range" min="0" max="100" value="100" aria-valuemin="0" aria-valuemax="100">
+        </label>
+        <label class="sg-check sg-follow">
+          <input type="checkbox" id="sg-mw" checked>
+          银河
+        </label>
+        <label class="sg-slider">
+          <span class="sg-slider-top">银河不透明度 <span id="sg-mw-alpha-val">45%</span></span>
+          <input id="sg-mw-alpha" type="range" min="0" max="100" value="45" aria-valuemin="0" aria-valuemax="100">
+        </label>
+        <p class="sg-note">地面不透明时，地平线以下的星星被挡住。关掉地面，或把不透明度拉低，地平线下的星星会透出来。银河是沿银道面的一条示意光带，银心附近更宽，不是照片。</p>
+
+        <h2>叠层</h2>
+        <ul class="sg-checks">
+          <li><label class="sg-check"><input type="checkbox" id="sg-horizon" checked>地平线与方向</label></li>
+          <li><label class="sg-check"><input type="checkbox" id="sg-grid-h">地平网格</label></li>
+          <li><label class="sg-check"><input type="checkbox" id="sg-grid-e" checked>赤道网格</label></li>
+          <li><label class="sg-check"><input type="checkbox" id="sg-labels">星名</label></li>
+        </ul>
+        <p class="sg-note">星名默认关掉，免得和星座名叠在一起。打开之后，优先用中文传统星名，没有的用拜耳名，例如 α Ori。一次显示很多星座时，只标较亮的星。</p>
+
+        <h2>手机指向</h2>
+        <div class="sg-row">
+          <button type="button" class="sg-btn" id="sg-gyro" aria-pressed="false">陀螺仪</button>
+        </div>
+        <p class="sg-note">打开后，把手机屏幕对着天空。电脑上通常没有这个传感器，仍可用手指拖动。iPhone 会先询问权限。</p>
+
+        <h2>怎么转</h2>
+        <p class="sg-note">
+          拖动星图可以转向，滚轮或双指可以缩放。地面视角默认抬头看天顶，北在上方，东在左边、西在右边，星星从东边升起、往西边落下。方向键也能转。天球外观里，坐标线跟着恒星时转，地球和地平不动。
+        </p>
+        <p id="sg-vega" class="sg-note"></p>
+        <p class="sg-note">
+          北京、北纬 40°（取整）、东经 116.4°、2026-03-20 20:00（UTC+8）：织女的高度约 −10.00°，方位约 11.98°；天狼的高度约 31.98°，方位约 194.88°；北极星的高度约 40.17°，接近纬度。地址后面也可以加 <code>?time=2026-03-20T20:00&amp;lat=40&amp;lon=116.4&amp;tz=8</code>。
+        </p>
+      </form>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap sg-head-wrap">
+        <p>
+          棍棒图改编自 Stellarium 贡献者的 modern 星空文化，恒星位置改编自 David Nash 的 HYG 星表第 4 版。两份数据都是
+          <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>，不是 GPL，也不是公有领域。
+          摘录和改写后的 <code>constellations-data.js</code> 同样以 CC BY-SA 4.0 发布。
+          来源：<a href="https://github.com/Stellarium/stellarium">Stellarium</a>、
+          <a href="https://github.com/astronexus/HYG-Database">HYG</a>。
+          星座边界是国际天文学联合会 1930 年划定的，边表用 P. Barbier 的 edges_18.txt（历元 B1875），再按 Meeus《天文算法》的岁差变到 J2000。
+          银河是沿银道的示意光带。不算星云，也不含岁差改正和大气折射。季节练习仍在<a href="stargazing.html">虚拟观星</a>。
+        </p>
+      </div>
+    </footer>
+    <noscript>
+      <p class="noscript-note wrap">没有 JavaScript 时，星图画不出来。课文和星表不依赖这一页。</p>
+    </noscript>
+    <script src="calculator.js"></script>
+    <script src="stargaze-astro.js"></script>
+    <script src="constellations-data.js"></script>
+    <script src="stargaze-render.js"></script>
+    <script src="stargaze-controls.js"></script>
+  </body>
+</html>

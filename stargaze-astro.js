@@ -198,6 +198,24 @@ var StarGazeAstro = (function () {
     return { forward: forward, right: right, up: up };
   }
 
+  /*
+    把目光转到某个高度、方位。
+    屏幕上方尽量朝天顶，所以北还在上头附近。
+    已经正对着天顶时，方位没有意义，改成和默认视角一样：北在上方。
+  */
+  function lookAtAltAz(altDeg, azDeg) {
+    var forward = enu(altDeg, azDeg);
+    /*
+      参照「上」几乎和目光重合时，叉积会翻 180°。
+      只在仰角超过大约 89°、人已经贴着天顶时，才改成北在上方。
+      再低一点（比如 74°）仍用天顶当「上」，抬头的过程才不会突然翻面。
+    */
+    var upRef = Math.abs(forward[2]) > Math.sin(89 * Math.PI / 180) ? [0, 1, 0] : [0, 0, 1];
+    var right = norm(cross(forward, upRef));
+    var up = norm(cross(right, forward));
+    return { forward: forward, right: right, up: up };
+  }
+
   /* 目光中心的高度和方位，用来在画面上写「现在朝向哪里」。天顶附近方位不稳定。 */
   function basisAltAz(basis) {
     var alt = Math.asin(clamp(basis.forward[2], -1, 1)) * 180 / Math.PI;
@@ -327,9 +345,11 @@ var StarGazeAstro = (function () {
     prev 是上一帧的结果。没有上一帧时传 null。
 
     天顶附近方位角没有稳定的定义，画面的旋转改由手机上沿决定。
-    新的一帧如果和上一帧差了几十度以上，就当成坏读数丢掉：
+    新的一帧如果和上一帧差了几十度以上，先当成坏读数丢掉：
     传感器大约每秒几十次，真实的抬头不会一下子转过 40°，
     但错误的欧拉角分解会突然差 180°。
+    若连续 5 帧都差这么多，或这种状态超过 300 毫秒，就改接受新方向。
+    否则一次尖峰之后，后面每一帧都会被旧方向挡掉，画面就锁死了。
   */
   function orientDevice(sample, prev) {
     prev = prev || {};
@@ -370,24 +390,39 @@ var StarGazeAstro = (function () {
       screenAngle
     );
 
+    var now = isFiniteNumber(sample.t) ? sample.t : Date.now();
+    var brokeLock = false;
     if (prev.basis) {
       var jump = angleBetween(prev.basis.forward, basis.forward);
       if (jump > 40) {
-        return {
-          basis: prev.basis,
-          yawOffset: prev.yawOffset,
-          compass: prev.compass,
-          rejected: true
-        };
+        var since = isFiniteNumber(prev.rejectSince) ? prev.rejectSince : now;
+        var count = (prev.rejectCount || 0) + 1;
+        var acceptedAt = isFiniteNumber(prev.acceptedAt) ? prev.acceptedAt : now;
+        /* 连续好几帧，或离上次采纳已经超过 300 毫秒，就不再死守旧方向。 */
+        if (count < 5 && (now - since) <= 300 && (now - acceptedAt) <= 300) {
+          return {
+            basis: prev.basis,
+            yawOffset: prev.yawOffset,
+            compass: prev.compass,
+            rejected: true,
+            rejectCount: count,
+            rejectSince: since,
+            acceptedAt: acceptedAt
+          };
+        }
+        brokeLock = true;
       }
-      basis = blendBasis(prev.basis, basis, 0.8);
+      if (!brokeLock) basis = blendBasis(prev.basis, basis, 0.8);
     }
 
     return {
       basis: basis,
       yawOffset: haveLock ? yawOffset : null,
       compass: acceptedCompass,
-      rejected: false
+      rejected: false,
+      rejectCount: 0,
+      rejectSince: null,
+      acceptedAt: now
     };
   }
 
@@ -426,6 +461,7 @@ var StarGazeAstro = (function () {
     equatorialVector: equatorialVector,
     zenithVector: zenithVector,
     defaultBasis: defaultBasis,
+    lookAtAltAz: lookAtAltAz,
     dragBasis: dragBasis,
     basisAltAz: basisAltAz,
     orientationBasis: orientationBasis,
