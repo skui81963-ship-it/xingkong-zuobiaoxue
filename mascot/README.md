@@ -14,7 +14,7 @@
 | `mascot-persona.js` | 台词。按早晨、中午、下午、傍晚、深夜、季节、月相分开。 |
 | `mascot-events.js` | 2026–2027 的节气、流星雨、交食、行星合，以及估算的朔望。 |
 | `quizzes/lesson-01.js` … | 每一课的复习题。文件名要和配置里的 `lesson` 对上。 |
-| `img/*.webp` | 五张立绘：`normal` 平常、`smug` 得意、`angry` 不悦、`shy` 害羞、`worried` 担心。白底已去掉，高度约 600 像素。 |
+| `img/*.webp` | 五张全身立绘：`normal` 平常、`smug` 得意、`angry` 不悦、`shy` 害羞、`worried` 担心。浅灰底已去掉，大约 9:16，脚也留在画面里。 |
 
 ## 接到页面上
 
@@ -112,7 +112,7 @@
 
 ## 换成立绘或换人
 
-五张图都是 3:4，白底去掉之后存成 WebP，高度约 600 像素。文件名必须是 `normal.webp`、`smug.webp`、`angry.webp`、`shy.webp`、`worried.webp`。
+五张图是全身、大约 9:16。浅灰底去掉之后存成 WebP，头到脚都要留着。文件名必须是 `normal.webp`、`smug.webp`、`angry.webp`、`shy.webp`、`worried.webp`。全屏对话时她站在文字框旁边或上方，按画面高度缩小，不裁成半身。右侧常驻也是整个人，正文栏会让开这一条。
 
 想换一个人，替换 `img/` 和 `mascot-persona.js`。引擎只认 `expression` 字段和这五个文件名。
 

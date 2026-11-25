@@ -22,7 +22,6 @@
   --sk-font: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Noto Sans CJK SC",
     "Source Han Sans SC", "Microsoft YaHei", "WenQuanYi Micro Hei", "Heiti SC",
     sans-serif;
-  --sk-sprite-welcome: min(76vh, 640px);
-  --sk-side-h: 168px;
+  --sk-side-w: 7.6rem;
   --sk-radius: 0.55rem;
 }
