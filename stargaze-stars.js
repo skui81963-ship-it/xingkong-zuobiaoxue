@@ -169,7 +169,7 @@ var StarGazeStars = (function () {
     { hip: 93805, sky: "", name: "天弁七", bayer: "λ Aql", mag: 3.43, ra: 286.56224338, dec: -4.88255421, cons: ["aql"], ast: [] },
     { hip: 94779, sky: "", name: "天津二", bayer: "κ Cyg", mag: 3.80, ra: 289.27570325, dec: 53.36845943, cons: ["cyg"], ast: [] },
     { hip: 95501, sky: "", name: "右旗二", bayer: "δ Aql", mag: 3.36, ra: 291.37458540, dec: 3.11477530, cons: ["aql"], ast: [] },
-    { hip: 95853, sky: "", name: "", bayer: "ι Cyg", mag: 3.76, ra: 292.42649598, dec: 51.72977887, cons: ["cyg"], ast: [] },
+    { hip: 95853, sky: "", name: "奚仲二", bayer: "ι Cyg", mag: 3.76, ra: 292.42649598, dec: 51.72977887, cons: ["cyg"], ast: [] },
     { hip: 95947, sky: "", name: "辇道增七", bayer: "β1 Cyg", mag: 3.05, ra: 292.68033578, dec: 27.95968112, cons: ["cyg"], ast: [] },
     { hip: 96468, sky: "", name: "右旗五", bayer: "ι Aql", mag: 4.36, ra: 294.18032351, dec: -1.28660090, cons: ["aql"], ast: [] },
     { hip: 97165, sky: "", name: "天津二", bayer: "δ Cyg", mag: 2.86, ra: 296.24365768, dec: 45.13080969, cons: ["cyg"], ast: [] },
