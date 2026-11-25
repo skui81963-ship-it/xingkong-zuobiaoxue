@@ -696,8 +696,8 @@ var StarGazeRender = (function () {
   }
 
   /*
-    银河沿银道画成一条光带。北缘和南缘的屏幕距离当作线宽。
-    投影被拉得太长时这一小段不画，避免在画面边缘甩出一块楔形。
+    银河沿银道画成一条光带：北缘和南缘之间填色，中间更亮。
+    屏幕上的宽度有上限，投影被拉得很长时这一小段断开，避免甩出楔形。
   */
   function milkyEnds(sample, lst) {
     var north = StarGazeAstro.equatorialVector(sample[0], sample[1], lst);
@@ -708,39 +708,65 @@ var StarGazeRender = (function () {
     return { north: north, south: south, mid: mid, glow: sample[4] };
   }
 
+  /*
+    把北缘、南缘收到不超过 maxW 的宽度，再填成一条带子。
+    圆头粗线会在地平附近叠成一节一节的珠子，所以这里用四边形填充。
+  */
+  function capBand(nP, sP, maxW) {
+    if (!nP || !sP) return null;
+    var dx = sP.x - nP.x;
+    var dy = sP.y - nP.y;
+    var len = Math.sqrt(dx * dx + dy * dy);
+    if (len < 1) return null;
+    var half = Math.min(len, maxW) / 2;
+    var mx = (nP.x + sP.x) / 2;
+    var my = (nP.y + sP.y) / 2;
+    var ux = dx / len;
+    var uy = dy / len;
+    return {
+      n: { x: mx - ux * half, y: my - uy * half },
+      s: { x: mx + ux * half, y: my + uy * half },
+      mid: { x: mx, y: my }
+    };
+  }
+
+  function fillMilkyQuad(ctx, a, b, alpha, color) {
+    var grd = ctx.createLinearGradient(a.n.x, a.n.y, a.s.x, a.s.y);
+    grd.addColorStop(0, "rgba(215,224,251,0)");
+    grd.addColorStop(0.5, color);
+    grd.addColorStop(1, "rgba(215,224,251,0)");
+    ctx.fillStyle = grd;
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    ctx.moveTo(a.n.x, a.n.y);
+    ctx.lineTo(b.n.x, b.n.y);
+    ctx.lineTo(b.s.x, b.s.y);
+    ctx.lineTo(a.s.x, a.s.y);
+    ctx.closePath();
+    ctx.fill();
+  }
+
   function drawMilkyGround(ctx, w, h, basis, zoom, theme, state) {
     var mw = state.catalog && state.catalog.milky;
     var alpha = state.milkyAlpha;
     if (!mw || !state.showMilkyWay || !(alpha > 0)) return;
     ctx.save();
-    ctx.strokeStyle = theme.milky;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
     var prev = null;
-    var limit = Math.min(w, h) * 0.16;
-    var maxWidth = Math.min(w, h) * 0.1;
+    var limit = Math.min(w, h) * 0.22;
+    var maxW = Math.min(w, h) * 0.11;
     var i;
     for (i = 0; i < mw.length; i++) {
       var ends = milkyEnds(mw[i], state.lst);
-      var midP = projectStereo(eqToEnu(ends.mid, state.lat), basis, w, h, zoom);
-      var nP = projectStereo(eqToEnu(ends.north, state.lat), basis, w, h, zoom);
-      var sP = projectStereo(eqToEnu(ends.south, state.lat), basis, w, h, zoom);
-      var width = 0;
-      if (nP && sP) {
-        var dx = nP.x - sP.x;
-        var dy = nP.y - sP.y;
-        width = Math.sqrt(dx * dx + dy * dy);
+      var band = capBand(
+        projectStereo(eqToEnu(ends.north, state.lat), basis, w, h, zoom),
+        projectStereo(eqToEnu(ends.south, state.lat), basis, w, h, zoom),
+        maxW
+      );
+      if (band && prev && !jumpTooFar(prev.mid, band.mid, limit) &&
+          !jumpTooFar(prev.n, band.n, limit) && !jumpTooFar(prev.s, band.s, limit)) {
+        fillMilkyQuad(ctx, prev, band, alpha * (0.5 * (prev.glow + ends.glow)), theme.milky);
       }
-      var ok = midP && width >= 3 && width <= maxWidth;
-      if (ok && prev && !jumpTooFar(prev.p, midP, limit)) {
-        ctx.globalAlpha = alpha * (0.5 * (prev.glow + ends.glow));
-        ctx.lineWidth = (prev.width + width) / 2;
-        ctx.beginPath();
-        ctx.moveTo(prev.p.x, prev.p.y);
-        ctx.lineTo(midP.x, midP.y);
-        ctx.stroke();
-      }
-      prev = ok ? { p: midP, glow: ends.glow, width: width } : null;
+      prev = band ? { n: band.n, s: band.s, mid: band.mid, glow: ends.glow } : null;
     }
     ctx.restore();
   }
@@ -750,35 +776,24 @@ var StarGazeRender = (function () {
     var alpha = state.milkyAlpha;
     if (!mw || !state.showMilkyWay || !(alpha > 0)) return;
     ctx.save();
-    ctx.strokeStyle = theme.milky;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
     var prev = null;
-    var limit = Math.min(w, h) * 0.14;
-    var maxWidth = Math.min(w, h) * 0.08;
+    var limit = Math.min(w, h) * 0.18;
+    var maxW = Math.min(w, h) * 0.09;
     var i;
     for (i = 0; i < mw.length; i++) {
       var ends = milkyEnds(mw[i], state.lst);
-      var midP = projectOutside(ends.mid, cam, w, h);
-      var nP = projectOutside(ends.north, cam, w, h);
-      var sP = projectOutside(ends.south, cam, w, h);
       var front = facingCamera(ends.mid, cam);
-      var width = 0;
-      if (nP && sP) {
-        var dx = nP.x - sP.x;
-        var dy = nP.y - sP.y;
-        width = Math.sqrt(dx * dx + dy * dy);
+      var band = capBand(
+        projectOutside(ends.north, cam, w, h),
+        projectOutside(ends.south, cam, w, h),
+        maxW
+      );
+      if (band && prev && prev.front === front && !jumpTooFar(prev.mid, band.mid, limit) &&
+          !jumpTooFar(prev.n, band.n, limit) && !jumpTooFar(prev.s, band.s, limit)) {
+        var fade = front ? 1 : theme.backStar;
+        fillMilkyQuad(ctx, prev, band, alpha * fade * (0.5 * (prev.glow + ends.glow)), theme.milky);
       }
-      var ok = midP && width >= 2 && width <= maxWidth;
-      if (ok && prev && prev.front === front && !jumpTooFar(prev.p, midP, limit)) {
-        ctx.globalAlpha = alpha * (front ? 1 : theme.backStar) * (0.5 * (prev.glow + ends.glow));
-        ctx.lineWidth = (prev.width + width) / 2;
-        ctx.beginPath();
-        ctx.moveTo(prev.p.x, prev.p.y);
-        ctx.lineTo(midP.x, midP.y);
-        ctx.stroke();
-      }
-      prev = ok ? { p: midP, glow: ends.glow, width: width, front: front } : null;
+      prev = band ? { n: band.n, s: band.s, mid: band.mid, glow: ends.glow, front: front } : null;
     }
     ctx.restore();
   }
@@ -902,9 +917,12 @@ var StarGazeRender = (function () {
     var hiItems = [];
     for (i = 0; i < items.length; i++) {
       if (items[i].hi) hiItems.push(items[i]);
-      else drawOne(items[i], false);
     }
+    /* 先占住正在定位的名字，别的名字让开，避免盖住高亮。 */
     for (i = 0; i < hiItems.length; i++) drawOne(hiItems[i], true);
+    for (i = 0; i < items.length; i++) {
+      if (!items[i].hi) drawOne(items[i], false);
+    }
     ctx.restore();
   }
 
@@ -1274,7 +1292,7 @@ var StarGazeRender = (function () {
       ctx.save();
       var lines = state.catalog.lines;
       var i;
-        if (state.showConstLines) {
+      if (state.showConstLines) {
         ctx.lineCap = "round";
         for (i = 0; i < lines.length; i++) {
           var line = lines[i];

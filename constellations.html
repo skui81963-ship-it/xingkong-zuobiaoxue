@@ -170,7 +170,7 @@
           <li><label class="sg-check"><input type="checkbox" id="sg-grid-e" checked>赤道网格</label></li>
           <li><label class="sg-check"><input type="checkbox" id="sg-labels">星名</label></li>
         </ul>
-        <p class="sg-note">星名默认关掉，免得和星座名叠在一起。打开之后，优先用传统星官名，没有的用拜耳名，例如 α Ori。一次显示很多星座时，只标较亮的星。</p>
+        <p class="sg-note">星名默认关掉，免得和星座名叠在一起。打开之后，优先用中文传统星名，没有的用拜耳名，例如 α Ori。一次显示很多星座时，只标较亮的星。</p>
 
         <h2>手机指向</h2>
         <div class="sg-row">
@@ -184,7 +184,7 @@
         </p>
         <p id="sg-vega" class="sg-note"></p>
         <p class="sg-note">
-          北京、北纬 40°、东经 116.4°、2026-03-20 20:00（UTC+8）：织女的高度约 −10.00°，方位约 11.98°；天狼的高度约 31.98°，方位约 194.88°；北极星的高度约 40.17°，接近纬度。地址后面也可以加 <code>?time=2026-03-20T20:00&amp;lat=40&amp;lon=116.4&amp;tz=8</code>。
+          北京、北纬 40°（取整）、东经 116.4°、2026-03-20 20:00（UTC+8）：织女的高度约 −10.00°，方位约 11.98°；天狼的高度约 31.98°，方位约 194.88°；北极星的高度约 40.17°，接近纬度。地址后面也可以加 <code>?time=2026-03-20T20:00&amp;lat=40&amp;lon=116.4&amp;tz=8</code>。
         </p>
       </form>
     </main>
@@ -192,7 +192,11 @@
     <footer class="site-footer">
       <div class="wrap sg-head-wrap">
         <p>
-          棍棒图来自 Stellarium 的 modern 星空文化（GPL-3.0，只用连线）。恒星位置来自 HYG 星表（David Nash，公有领域，综合依巴谷与耶鲁亮星表），历元 J2000.0。
+          棍棒图改编自 Stellarium 贡献者的 modern 星空文化，恒星位置改编自 David Nash 的 HYG 星表第 4 版。两份数据都是
+          <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>，不是 GPL，也不是公有领域。
+          摘录和改写后的 <code>constellations-data.js</code> 同样以 CC BY-SA 4.0 发布。
+          来源：<a href="https://github.com/Stellarium/stellarium">Stellarium</a>、
+          <a href="https://github.com/astronexus/HYG-Database">HYG</a>。
           星座边界是国际天文学联合会 1930 年划定的，边表用 P. Barbier 的 edges_18.txt（历元 B1875），再按 Meeus《天文算法》的岁差变到 J2000。
           银河是沿银道的示意光带。不算星云，也不含岁差改正和大气折射。季节练习仍在<a href="stargazing.html">虚拟观星</a>。
         </p>
@@ -201,10 +205,6 @@
     <noscript>
       <p class="noscript-note wrap">没有 JavaScript 时，星图画不出来。课文和星表不依赖这一页。</p>
     </noscript>
-    <!--
-      深葵夜不在这一页出现。搜索、星座清单、滑块和画布占满了边缘，
-      立绘会挡住操作。她在首页、课文和附录里。
-    -->
     <script src="calculator.js"></script>
     <script src="stargaze-astro.js"></script>
     <script src="constellations-data.js"></script>
