@@ -7,11 +7,19 @@
 
 .sk-overlay {
   position: fixed;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
   z-index: 80;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  overflow: hidden;
+  transform: none;
   color: var(--sk-ink);
   font-family: var(--sk-font);
   background:
@@ -33,6 +41,10 @@
 }
 
 body.sk-lock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
   overflow: hidden;
 }
 
@@ -91,6 +103,9 @@ body.sk-lock {
   grid-row: 2;
   margin: 0 1rem 0.9rem 0.35rem;
   width: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   padding: 1.15rem 1.15rem 0.85rem;
   background: var(--sk-panel);
   border: 1px solid var(--sk-line);
@@ -151,6 +166,7 @@ body.sk-lock {
 .sk-choices {
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   gap: 0.4rem;
   margin-top: 0.35rem;
 }
@@ -339,10 +355,21 @@ body.sk-lock {
     grid-column: 1;
     grid-row: 2;
     margin: 0 0.55rem 0.5rem;
+    max-height: 52vh;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
   }
 
   .sk-body {
-    max-height: 30vh;
+    max-height: none;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  .sk-choices {
+    flex: 0 0 auto;
   }
 }
 

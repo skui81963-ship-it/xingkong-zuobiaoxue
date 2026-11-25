@@ -71,7 +71,7 @@
         { expression: "smug", text: "秋天适合把夏天没认熟的补上。我只是提醒，不是催你。" }
       ],
       winter: [
-        { expression: "normal", text: "立冬已经过了，按节气算是冬天。北半球的白昼还会再短，到冬至最短。" },
+        { expression: "normal", text: "立冬已经过了，按节气算是冬天。冬至前后北半球白昼最短，夜长正好用来认星。" },
         { expression: "smug", text: "冬天的夜长。观星者，想认星的人该高兴，别光顾着缩手。" }
       ]
     },

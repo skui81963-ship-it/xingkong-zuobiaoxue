@@ -407,14 +407,46 @@
     }
   }
 
+  function resetOverlay() {
+    var overlay = state.overlay;
+    if (!overlay) return;
+    overlay.scrollTop = 0;
+    overlay.scrollLeft = 0;
+    var stage = overlay.querySelector(".sk-stage");
+    var body = overlay.querySelector(".sk-body");
+    if (stage) stage.scrollTop = 0;
+    if (body) body.scrollTop = 0;
+  }
+
+  function alignOverlay() {
+    var overlay = state.overlay;
+    if (!overlay || overlay.hidden) return;
+    overlay.style.top = "0px";
+    overlay.style.left = "0px";
+    var rect = overlay.getBoundingClientRect();
+    if (Math.abs(rect.top) > 1) overlay.style.top = (-rect.top) + "px";
+    if (Math.abs(rect.left) > 1) overlay.style.left = (-rect.left) + "px";
+    resetOverlay();
+  }
+
   function showOverlay() {
-    state.overlay.hidden = false;
+    state.lockY = window.scrollY || document.documentElement.scrollTop || 0;
+    document.body.style.top = "-" + state.lockY + "px";
     document.body.classList.add("sk-lock");
+    state.overlay.hidden = false;
+    alignOverlay();
+    window.requestAnimationFrame(alignOverlay);
   }
 
   function hideOverlay() {
+    var y = state.lockY || 0;
     state.overlay.hidden = true;
+    state.overlay.style.top = "";
+    state.overlay.style.left = "";
+    resetOverlay();
     document.body.classList.remove("sk-lock");
+    document.body.style.top = "";
+    window.scrollTo(0, y);
   }
 
   function markWelcome() {
@@ -715,8 +747,9 @@
     }
     if (href && href.charAt(0) === "#") {
       var target = document.querySelector(href);
-      if (target && target.scrollIntoView) {
-        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (target) {
+        var top = target.getBoundingClientRect().top + (window.scrollY || document.documentElement.scrollTop || 0);
+        window.scrollTo(0, Math.max(0, top - 12));
       }
       try {
         history.replaceState(null, "", href);
@@ -740,6 +773,7 @@
     showOverlay();
     if (quiz.afterJump !== "next") renderQuiz();
     quiz.afterJump = "";
+    alignOverlay();
   }
 
   function onOverlayClick(event) {
@@ -798,9 +832,9 @@
           '<div class="sk-progress"></div>' +
           '<div class="sk-body">' +
             '<div class="sk-text" aria-live="polite"></div>' +
-            '<div class="sk-choices"></div>' +
             '<p class="sk-hint">点击继续</p>' +
           "</div>" +
+          '<div class="sk-choices"></div>' +
         "</div>" +
       "</div>";
     document.body.appendChild(overlay);
