@@ -130,37 +130,125 @@ var StarGazeControls = (function () {
       .replace(/\s+/g, "");
   }
 
+  /*
+    每个字段单独比，不把中文名、拉丁名、缩写粘成一串。
+    粘在一起时，Eridanus 和 Eri 会变成 eridanuseri，里面含有 ser。
+    完全相同（中文名、拉丁名、缩写整词、别名）优先于开头相同，再优先于中间包含。
+  */
+  function scoreField(q, text, wholeOnly) {
+    var f = foldName(text);
+    if (!q || !f) return null;
+    if (f === q) return { score: 300, tight: f.length };
+    if (wholeOnly) return null;
+    if (f.indexOf(q) === 0) return { score: 200, tight: f.length };
+    if (f.indexOf(q) !== -1) return { score: 100, tight: f.length };
+    return null;
+  }
+
+  function scoreRecord(q, rec) {
+    var best = null;
+    function keep(hit) {
+      if (!hit) return;
+      if (!best || hit.score > best.score || (hit.score === best.score && hit.tight < best.tight)) {
+        best = hit;
+      }
+    }
+    keep(scoreField(q, rec.name, false));
+    keep(scoreField(q, rec.latin, false));
+    keep(scoreField(q, rec.abbr, true));
+    var alias = String(rec.alias || "").split(/\s+/);
+    var i;
+    for (i = 0; i < alias.length; i++) keep(scoreField(q, alias[i], false));
+    return best ? best.score : 0;
+  }
+
+  function bestMatch(q, list) {
+    var query = foldName(String(q || "").trim());
+    if (!query) return null;
+    var best = null;
+    var bestScore = 0;
+    var bestTight = 1e9;
+    var i;
+    for (i = 0; i < list.length; i++) {
+      var rec = list[i];
+      var hit = null;
+      var tight = 1e9;
+      function keep(one) {
+        if (!one) return;
+        if (!hit || one.score > hit || (one.score === hit && one.tight < tight)) {
+          hit = one.score;
+          tight = one.tight;
+        }
+      }
+      keep(scoreField(query, rec.name, false));
+      keep(scoreField(query, rec.latin, false));
+      keep(scoreField(query, rec.abbr, true));
+      var alias = String(rec.alias || "").split(/\s+/);
+      var k;
+      for (k = 0; k < alias.length; k++) keep(scoreField(query, alias[k], false));
+      if (!hit) continue;
+      if (!best || hit > bestScore || (hit === bestScore && tight < bestTight)) {
+        best = rec;
+        bestScore = hit;
+        bestTight = tight;
+      }
+    }
+    return best;
+  }
+
+  /* 88 个星座的中文名、拉丁名、缩写，各自搜索都必须回到自己。 */
+  function selfTestSearch(list) {
+    var bad = [];
+    var i, k;
+    for (i = 0; i < list.length; i++) {
+      var rec = list[i];
+      var queries = [rec.name, rec.latin, rec.abbr];
+      for (k = 0; k < queries.length; k++) {
+        var hit = bestMatch(queries[k], list);
+        if (!hit || hit.id !== rec.id) {
+          bad.push(queries[k] + " -> " + (hit ? hit.id : "?"));
+        }
+      }
+    }
+    return bad;
+  }
+
   function applySearch() {
     var input = $("sg-find");
     var note = $("sg-find-note");
     if (!input) return null;
     var q = foldName(input.value.trim());
     var items = document.querySelectorAll("#sg-cons li");
-    var n = 0;
-    var first = null;
+    var records = [];
     var i;
     for (i = 0; i < items.length; i++) {
-      var blob = foldName(
-        (items[i].getAttribute("data-name") || "") + " " +
-        (items[i].getAttribute("data-latin") || "") + " " +
-        (items[i].getAttribute("data-abbr") || "") + " " +
-        (items[i].getAttribute("data-alias") || "")
-      );
-      var ok = !q || blob.indexOf(q) !== -1;
-      if (ok) {
-        items[i].classList.remove("is-hidden");
+      var box = items[i].querySelector("[data-cons]");
+      records.push({
+        id: box ? box.getAttribute("data-cons") : "",
+        name: items[i].getAttribute("data-name") || "",
+        latin: items[i].getAttribute("data-latin") || "",
+        abbr: items[i].getAttribute("data-abbr") || "",
+        alias: items[i].getAttribute("data-alias") || "",
+        li: items[i]
+      });
+    }
+    var best = q ? bestMatch(q, records) : null;
+    var n = 0;
+    for (i = 0; i < records.length; i++) {
+      var show = !q || scoreRecord(q, records[i]) > 0;
+      if (show) {
+        records[i].li.classList.remove("is-hidden");
         n += 1;
-        if (!first) first = items[i];
       } else {
-        items[i].classList.add("is-hidden");
+        records[i].li.classList.add("is-hidden");
       }
     }
     if (note) {
       if (!q) note.textContent = "点星座的名字，画面会转向它。";
       else if (!n) note.textContent = "没有找到这个星座。可以试中文名或拉丁名。";
-      else note.textContent = "找到 " + n + " 个。点名字可以把星座移到画面中央。";
+      else note.textContent = "找到 " + n + " 个。回车转到最匹配的一个。";
     }
-    return first;
+    return best ? best.li : null;
   }
 
   function markCurrent(id) {
@@ -633,12 +721,15 @@ var StarGazeControls = (function () {
         silent = true;
         latInput.value = pos.coords.latitude.toFixed(4);
         lonInput.value = pos.coords.longitude.toFixed(4);
-        var tz = -new Date().getTimezoneOffset() / 60;
+        /* 一月和七月里，偏西更多的那个是标准时，不含夏令时。 */
+        var jan = new Date(2026, 0, 1).getTimezoneOffset();
+        var jul = new Date(2026, 6, 1).getTimezoneOffset();
+        var tz = -Math.max(jan, jul) / 60;
         tzInput.value = String(Math.round(tz * 2) / 2);
         city.value = "custom";
         silent = false;
         readPlace(true);
-        status("已使用浏览器定位。时区按这台设备的设置。");
+        status("已使用浏览器定位。时区用标准时，不含夏令时。");
       }, function () {
         status("没有拿到位置（可能被拒绝）。仍使用上面的经纬度。");
       }, { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 });
@@ -809,7 +900,15 @@ var StarGazeControls = (function () {
     readPlace(false);
     applyQuery();
     bind();
-    if (iau) applySearch();
+    if (iau) {
+      applySearch();
+      if (catalog.meta) {
+        var searchBad = selfTestSearch(catalog.meta);
+        if (searchBad.length && window.console && console.error) {
+          console.error("星座搜索自检失败：" + searchBad.join("；"));
+        }
+      }
+    }
     if (typeof URLSearchParams === "function") {
       var focus = new URLSearchParams(window.location.search).get("focus");
       if (focus && catalog.byId && catalog.byId[focus]) centerConstellation(focus);
@@ -839,8 +938,10 @@ var StarGazeControls = (function () {
       var lst = StarGazeAstro.lstDegrees(state.utcMs, state.lon);
       var h = StarGazeAstro.horizontal(star.ra, star.dec, lst, state.lat);
       return { name: star.name, alt: h.alt, az: h.az, lst: lst, ra: star.ra, dec: star.dec };
-    }
+    },
+    bestMatch: bestMatch,
+    selfTestSearch: selfTestSearch
   };
 })();
 
-StarGazeControls.start();
+if (typeof document !== "undefined") StarGazeControls.start();
