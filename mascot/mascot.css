@@ -1,0 +1,381 @@
+/*
+  mascot.css
+  ----------
+  深葵夜的布局：全屏对话、右侧常驻、复习测验。
+  颜色从 mascot-theme.css 的变量来。
+*/
+
+.sk-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  transform: none;
+  color: var(--sk-ink);
+  font-family: var(--sk-font);
+  background:
+    radial-gradient(1.4px 1.4px at 12% 18%, rgba(255, 252, 240, 0.85), transparent),
+    radial-gradient(1.2px 1.2px at 72% 12%, rgba(243, 215, 161, 0.7), transparent),
+    radial-gradient(1px 1px at 84% 46%, rgba(255, 255, 255, 0.45), transparent),
+    radial-gradient(1.3px 1.3px at 30% 70%, rgba(255, 255, 255, 0.35), transparent),
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(40, 56, 110, 0.45), transparent),
+    var(--sk-bg);
+}
+
+.sk-overlay[hidden],
+.sk-dock[hidden],
+.sk-recall[hidden],
+.sk-bubble[hidden],
+.sk-hint[hidden],
+.sk-resume[hidden] {
+  display: none !important;
+}
+
+body.sk-lock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.sk-skip {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  z-index: 2;
+  font: inherit;
+  font-size: 0.92rem;
+  color: var(--sk-gold-strong);
+  background: rgba(8, 12, 24, 0.55);
+  border: 1px solid var(--sk-line);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  cursor: pointer;
+}
+
+.sk-stage {
+  position: relative;
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 42vw) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  align-items: end;
+}
+
+.sk-figure {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0.5rem 0.2rem 0.45rem 0.7rem;
+  pointer-events: none;
+}
+
+.sk-sprite {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  max-height: calc(100vh - 0.9rem);
+  object-fit: contain;
+  object-position: bottom center;
+  filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.45));
+}
+
+.sk-box {
+  position: relative;
+  z-index: 1;
+  grid-column: 2;
+  grid-row: 2;
+  margin: 0 1rem 0.9rem 0.35rem;
+  width: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 1.15rem 1.15rem 0.85rem;
+  background: var(--sk-panel);
+  border: 1px solid var(--sk-line);
+  border-radius: var(--sk-radius);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+.sk-name {
+  position: absolute;
+  top: 0;
+  left: 1rem;
+  transform: translateY(-58%);
+  padding: 0.18rem 0.75rem;
+  background: var(--sk-gold);
+  color: var(--sk-name-ink);
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  border-radius: 0.25rem;
+}
+
+.sk-progress {
+  position: absolute;
+  top: 0;
+  right: 1rem;
+  transform: translateY(-58%);
+  color: var(--sk-gold-strong);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+}
+
+.sk-body {
+  max-height: min(46vh, 22rem);
+  overflow: auto;
+}
+
+.sk-text {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.sk-text p {
+  margin: 0 0 0.45rem;
+}
+
+.sk-text a {
+  color: var(--sk-gold-strong);
+}
+
+.sk-hint {
+  margin: 0.35rem 0 0;
+  text-align: right;
+  color: var(--sk-muted);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+}
+
+.sk-choices {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+
+.sk-choice {
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.45;
+  text-align: left;
+  color: var(--sk-ink);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--sk-line-soft);
+  border-radius: 0.4rem;
+  padding: 0.55rem 0.75rem;
+  cursor: pointer;
+}
+
+.sk-choice:hover,
+.sk-choice:focus-visible {
+  border-color: var(--sk-gold);
+}
+
+.sk-missed {
+  margin: 0.4rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--sk-muted);
+  font-size: 0.92rem;
+}
+
+.sk-missed a {
+  color: var(--sk-gold-strong);
+}
+
+.sk-dock {
+  position: fixed;
+  right: 0.4rem;
+  bottom: 0.4rem;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
+  width: var(--sk-side-w);
+  max-width: var(--sk-side-w);
+  font-family: var(--sk-font);
+  pointer-events: none;
+}
+
+.sk-bubble,
+.sk-mini,
+.sk-hide {
+  pointer-events: auto;
+}
+
+.sk-bubble {
+  padding: 0.45rem 0.5rem;
+  background: var(--sk-panel);
+  color: var(--sk-ink);
+  border: 1px solid var(--sk-line);
+  border-radius: 0.5rem 0.5rem 0.15rem 0.5rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+}
+
+.sk-mini {
+  width: 100%;
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.sk-mini img {
+  width: 100%;
+  height: auto;
+  max-height: min(52vh, 440px);
+  object-fit: contain;
+  object-position: bottom center;
+  display: block;
+  filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.45));
+}
+
+.sk-hide,
+.sk-recall,
+.sk-resume,
+.sk-review-btn {
+  font: inherit;
+  cursor: pointer;
+}
+
+.sk-hide,
+.sk-recall {
+  color: var(--sk-gold-strong);
+  background: rgba(8, 12, 24, 0.82);
+  border: 1px solid var(--sk-line);
+  border-radius: 999px;
+  padding: 0.28rem 0.4rem;
+  font-size: 0.82rem;
+}
+
+.sk-hide {
+  width: 100%;
+}
+
+.sk-recall {
+  position: fixed;
+  right: 0.7rem;
+  bottom: 0.7rem;
+  z-index: 40;
+  font-family: var(--sk-font);
+}
+
+.sk-resume {
+  position: fixed;
+  left: 50%;
+  bottom: 0.8rem;
+  transform: translateX(-50%);
+  z-index: 45;
+  font-family: var(--sk-font);
+  color: var(--sk-name-ink);
+  background: var(--sk-gold);
+  border: 0;
+  border-radius: 999px;
+  padding: 0.45rem 0.95rem;
+  font-size: 0.95rem;
+}
+
+.sk-review-launch {
+  margin: 1rem 0 0;
+}
+
+.sk-review-btn {
+  color: var(--sk-gold-strong);
+  background: transparent;
+  border: 1px solid var(--sk-line);
+  border-radius: 999px;
+  padding: 0.4rem 0.95rem;
+  font-size: 1rem;
+}
+
+.note h2[id],
+.note h3[id] {
+  scroll-margin-top: 1rem;
+}
+
+/*
+  右侧留出一条和全身立绘同宽的空档，正文栏不再伸到她身上。
+  宽屏时本来就有空白，不必再把正文挤窄。
+*/
+@media (max-width: 1100px) {
+  body.sk-has-dock .wrap {
+    width: min(46rem, calc(100% - var(--sk-side-w) - 1.6rem));
+    margin-left: max(0.75rem, calc((100% - 46rem - var(--sk-side-w)) / 2));
+    margin-right: calc(var(--sk-side-w) + 0.55rem);
+  }
+}
+
+@media (min-width: 1100px) {
+  :root {
+    --sk-side-w: 9.5rem;
+  }
+}
+
+@media (max-width: 860px) {
+  .sk-stage {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .sk-figure {
+    grid-column: 1;
+    grid-row: 1;
+    height: 100%;
+    padding: 2.7rem 0.4rem 0.15rem;
+  }
+
+  .sk-sprite {
+    max-width: min(68vw, 100%);
+    max-height: 100%;
+  }
+
+  .sk-box {
+    grid-column: 1;
+    grid-row: 2;
+    margin: 0 0.55rem 0.5rem;
+    max-height: 52vh;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .sk-body {
+    max-height: none;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  .sk-choices {
+    flex: 0 0 auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-sprite,
+  .sk-mini img {
+    transition: none;
+  }
+}
