@@ -216,24 +216,6 @@ var StarGazeAstro = (function () {
     return { forward: forward, right: right, up: up };
   }
 
-  /* 沿短弧转动目光，同时令画面上沿平滑转到目标方向。 */
-  function basisTurn(start, end) {
-    var axis = cross(start.forward, end.forward);
-    var length = Math.sqrt(dot(axis, axis));
-    var forwardDot = clamp(dot(start.forward, end.forward), -1, 1);
-    var arc = Math.atan2(length, forwardDot);
-    axis = length < 1e-9 ? start.up : scale(axis, 1 / length);
-    var transportedUp = rotateAround(start.up, axis, arc);
-    var roll = Math.atan2(dot(end.forward, cross(transportedUp, end.up)), dot(transportedUp, end.up));
-    return function (t) {
-      if (t <= 0) return start;
-      if (t >= 1) return end;
-      var forward = norm(rotateAround(start.forward, axis, arc * t));
-      var up = norm(rotateAround(rotateAround(start.up, axis, arc * t), forward, roll * t));
-      return { forward: forward, up: up, right: norm(cross(forward, up)) };
-    };
-  }
-
   /* 目光中心的高度和方位，用来在画面上写「现在朝向哪里」。天顶附近方位不稳定。 */
   function basisAltAz(basis) {
     var alt = Math.asin(clamp(basis.forward[2], -1, 1)) * 180 / Math.PI;
@@ -480,7 +462,6 @@ var StarGazeAstro = (function () {
     zenithVector: zenithVector,
     defaultBasis: defaultBasis,
     lookAtAltAz: lookAtAltAz,
-    basisTurn: basisTurn,
     dragBasis: dragBasis,
     basisAltAz: basisAltAz,
     orientationBasis: orientationBasis,

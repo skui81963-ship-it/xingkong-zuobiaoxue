@@ -29,9 +29,6 @@
   };
   var KEY_HIDDEN = "shenkuiye.hidden";
   var KEY_WELCOME = "shenkuiye.welcomeDay";
-  var spriteDir = document.currentScript && document.currentScript.getAttribute("data-sk-sprite-dir") || "img/";
-  var phoneReview = window.matchMedia("(pointer: coarse) and (max-width: 650px), " +
-    "(pointer: coarse) and (max-height: 500px) and (max-width: 960px)");
 
   var state = {
     root: "mascot/",
@@ -381,7 +378,7 @@
   function setSprite(img, expression) {
     var names = persona().expressions || {};
     var name = names[expression] ? expression : "normal";
-    img.src = state.root + spriteDir + name + ".webp";
+    img.src = state.root + "img/" + name + ".webp";
     img.alt = "深葵夜" + (names[name] ? "，" + names[name] : "");
   }
 
@@ -389,7 +386,7 @@
     var names = persona().expressions || { normal: "", smug: "", angry: "", shy: "", worried: "" };
     Object.keys(names).forEach(function (name) {
       var img = new Image();
-      img.src = state.root + spriteDir + name + ".webp";
+      img.src = state.root + "img/" + name + ".webp";
     });
   }
 
@@ -423,289 +420,33 @@
 
   function alignOverlay() {
     var overlay = state.overlay;
-    if (!overlay || overlay.hidden || state.reviewFlow) return;
+    if (!overlay || overlay.hidden) return;
     overlay.style.top = "0px";
     overlay.style.left = "0px";
     var rect = overlay.getBoundingClientRect();
     if (Math.abs(rect.top) > 1) overlay.style.top = (-rect.top) + "px";
     if (Math.abs(rect.left) > 1) overlay.style.left = (-rect.left) + "px";
-  }
-
-  /* 装饰层只负责移动；按钮、焦点和答题状态始终留在真正的界面。 */
-  var effects = [];
-  var flightBox = null;
-  var drag = null;
-  var ignoreClickUntil = 0;
-
-  function clearEffects() {
-    effects.splice(0).forEach(function (stop) { stop(); });
-    flightBox = null;
-  }
-
-  function animate(el, frames, time, easing, cleanup) {
-    var animation;
-    var stop = function () {
-      if (animation) animation.cancel();
-      if (cleanup) cleanup();
-      var i = effects.indexOf(stop);
-      if (i !== -1) effects.splice(i, 1);
-    };
-    effects.push(stop);
-    animation = SkyMotion.play(el, frames, time, easing, stop);
-    return animation;
-  }
-
-  function canAnimate() {
-    return typeof SkyMotion !== "undefined" && state.overlay.animate;
-  }
-
-  function inputType(event) { return event && (event.type === "keydown" || event.detail === 0) ? "keyboard" : "pointer"; }
-
-  function place(el, rect) {
-    el.style.left = rect.left + "px";
-    el.style.top = rect.top + "px";
-    el.style.width = rect.width + "px";
-    el.style.height = rect.height + "px";
-  }
-
-  function decorative(el, parent) {
-    el.hidden = false;
-    el.inert = true;
-    el.setAttribute("aria-hidden", "true");
-    el.removeAttribute("aria-modal");
-    el.removeAttribute("role");
-    (parent || document.body).appendChild(el);
-    return el;
-  }
-
-  function fade(el, time, start, end, delay) {
-    return animate(el, [{ opacity: start }, { offset: delay, opacity: start }, { opacity: end }], time, "linear");
-  }
-
-  function takeOverlay() {
-    if (!canAnimate() || state.reviewFlow) return null;
-    var copy = state.overlay.cloneNode(true);
-    copy.classList.add("sk-flight");
-    place(copy, state.overlay.getBoundingClientRect());
-    var originalStage = state.stage;
-    var stageStyle = getComputedStyle(originalStage);
-    copy.querySelector(".sk-stage").style.transform = stageStyle.transform;
-    copy.querySelector(".sk-stage").style.opacity = stageStyle.opacity;
-    copy.querySelector(".sk-backdrop").style.opacity = getComputedStyle(state.backdrop).opacity;
-    var originalParts = state.box.children;
-    Array.from(copy.querySelector(".sk-box").children).forEach(function (part, i) {
-      part.style.opacity = getComputedStyle(originalParts[i]).opacity;
-    });
-    copy.querySelector(".sk-figure").style.opacity = getComputedStyle(state.figure).opacity;
-    return copy;
-  }
-
-  function paintedImage(img) {
-    if (!img.naturalWidth || !img.naturalHeight) return null;
-    var r = img.getBoundingClientRect();
-    if (!SkyMotion.visible(r)) return null;
-    var scale = Math.min(r.width / img.naturalWidth, r.height / img.naturalHeight);
-    var width = img.naturalWidth * scale;
-    var height = img.naturalHeight * scale;
-    return { left: r.left + (r.width - width) / 2, top: r.bottom - height, width: width, height: height };
-  }
-
-  function releaseWelcome(copy, portrait, wrapLefts, input) {
-    if (!copy) return;
-    var reduced = SkyMotion.preference.matches;
-    var time = SkyMotion.duration("welcome", input === "keyboard");
-    var mini = state.miniImg;
-    var destination = !reduced && paintedImage(mini);
-    if (!portrait || !destination) {
-      decorative(copy);
-      animate(copy, [{ opacity: 1 }, { opacity: 0 }], reduced ? time : time * 0.45, "ease-out", function () { copy.remove(); });
-      return;
-    }
-    var shared = copy.querySelector(".sk-sprite");
-    shared.remove();
-    decorative(copy);
-    animate(copy, [{ opacity: 1 }, { opacity: 0 }], time * 0.43, "ease-out", function () { copy.remove(); });
-    shared.className = "sk-flight-portrait";
-    shared.alt = "";
-    place(shared, portrait);
-    decorative(shared);
-    mini.style.visibility = "hidden";
-    animate(shared, [{ transform: "none" }, { transform: SkyMotion.transform(destination.left - portrait.left,
-      destination.top - portrait.top, destination.width / portrait.width, destination.height / portrait.height) }], time, null, function () {
-      shared.remove();
-      mini.style.visibility = "";
-    });
-    wrapLefts.forEach(function (left, wrap) {
-      var dx = left - wrap.getBoundingClientRect().left;
-      if (Math.abs(dx) < 1) return;
-      animate(wrap, [{ translate: dx + "px 0" }, { translate: "none" }], time, "ease-in-out");
-    });
-  }
-
-  function morphBox(first, last, fromRadius, toRadius, time, opening) {
-    var shell = document.createElement("div");
-    shell.className = "sk-box sk-flight-box";
-    place(shell, last);
-    if (opening) {
-      decorative(shell, state.overlay);
-      state.overlay.insertBefore(shell, state.stage);
-      shell.classList.add("sk-flight-box-inner");
-    } else decorative(shell);
-    var sx = first.width / last.width, sy = first.height / last.height;
-    function radius(r, x, y) { return (r / x) + "px / " + (r / y) + "px"; }
-    var frames = [
-      { transform: SkyMotion.transform(first.left - last.left, first.top - last.top, sx, sy), borderRadius: radius(fromRadius, sx, sy) },
-      { transform: "none", borderRadius: radius(toRadius, 1, 1) }
-    ];
-    if (opening) state.box.classList.add("sk-in-flight");
-    flightBox = shell;
-    animate(shell, frames, time, null, function () {
-      shell.remove();
-      if (flightBox === shell) flightBox = null;
-      if (opening) state.box.classList.remove("sk-in-flight");
-    });
-    animate(shell, [{ backgroundColor: opening ? "var(--sky)" : "var(--sk-panel-solid)", opacity: 1 },
-      { offset: 0.75, backgroundColor: "var(--sk-panel-solid)", opacity: 1 },
-      { backgroundColor: opening ? "var(--sk-panel)" : "var(--sky)", opacity: opening ? 1 : 0 }], time, "linear");
-  }
-
-  function buttonBox(el) {
-    if (!canAnimate() || !el || !el.isConnected) return null;
-    var rect = el.getBoundingClientRect();
-    if (!SkyMotion.visible(rect)) return null;
-    return { rect: rect, radius: Math.min(parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0, rect.height / 2) };
-  }
-
-  function revealReview(source, input) {
-    if (!canAnimate()) return;
-    var time = SkyMotion.duration("review", input === "keyboard");
-    clearEffects();
-    var end = state.box.getBoundingClientRect();
-    if (state.reviewFlow && (SkyMotion.preference.matches || !source || end.bottom > window.innerHeight)) {
-      fade(state.stage, time, 0, 1, 0);
-      return;
-    }
-    if (SkyMotion.preference.matches || !source) {
-      fade(state.overlay, time, 0, 1, 0);
-      return;
-    }
-    var radius = parseFloat(getComputedStyle(state.box).borderTopLeftRadius);
-    morphBox(source.rect, end, source.radius, radius, time, true);
-    fade(state.backdrop, time, 0, 1, 0);
-    [state.figure, state.skip].concat(Array.from(state.box.children)).forEach(function (el) { fade(el, time, 0, 1, 0.48); });
-  }
-
-  function exitReview(copy, first, radius, target, input, velocity) {
-    if (!copy && (!canAnimate() || !target || !SkyMotion.visible(first) ||
-        first.top < 0 || first.bottom > window.innerHeight || SkyMotion.preference.matches)) return;
-    var time = SkyMotion.duration("review", input === "keyboard");
-    var reduced = SkyMotion.preference.matches;
-    if (velocity && !reduced) time = Math.max(130, time / (1 + Math.abs(velocity) * 0.65));
-    if (!copy) {
-      morphBox(first, target.rect, radius, target.radius, time, false);
-      return;
-    }
-    decorative(copy);
-    if (reduced || !target || !SkyMotion.visible(first)) {
-      animate(copy, [{ opacity: 1 }, { opacity: 0 }], reduced ? time : time * 0.48, "ease-out", function () { copy.remove(); });
-      return;
-    }
-    var box = copy.querySelector(".sk-box");
-    box.classList.add("sk-in-flight");
-    morphBox(first, target.rect, radius, target.radius, time, false);
-    animate(copy, [{ opacity: 1 }, { opacity: 0 }], time * 0.33, "linear", function () { copy.remove(); });
-  }
-
-  function focusOn(el) {
-    if (el && el.isConnected && el.getClientRects().length) el.focus({ preventScroll: true });
-  }
-
-  function shieldPage(on) {
-    if (on) {
-      state.shield = Array.from(document.body.children).filter(function (el) {
-        return el !== state.overlay && !el.inert && !el.matches("script, style, .sk-flight, .sk-flight-box, .sk-flight-portrait");
-      });
-      state.shield.forEach(function (el) { el.inert = true; });
-    } else {
-      (state.shield || []).forEach(function (el) { el.inert = false; });
-      state.shield = null;
-    }
-  }
-
-  function pinReader() {
-    var pin = document.createElement("div");
-    pin.className = "sk-page-pin";
-    pin.style.top = -state.lockY + "px";
-    pin.inert = true;
-    pin.setAttribute("aria-hidden", "true");
-    state.overlay.before(pin);
-    var nodes = state.shield.map(function (el) {
-      var marker = document.createComment("");
-      el.before(marker);
-      pin.appendChild(el);
-      return { el: el, marker: marker };
-    });
-    state.unpinReader = function () {
-      nodes.forEach(function (node) { node.marker.replaceWith(node.el); });
-      pin.remove();
-      state.unpinReader = null;
-    };
-  }
-
-  function setReviewLayout(flow, transferScroll) {
-    var body = document.body;
-    var overlay = state.overlay;
-    var inner = state.reviewBody;
-    var previousTop = transferScroll ? inner.getBoundingClientRect().top - inner.scrollTop : 0;
-    state.reviewFlow = flow;
-    overlay.classList.toggle("sk-flow", flow);
-    body.classList.toggle("sk-review-flow", flow);
-    body.classList.toggle("sk-lock", !flow);
-    body.style.top = flow ? "" : -state.lockY + "px";
-    if (flow) {
-      overlay.style.top = "";
-      overlay.style.left = "";
-      pinReader();
-      var documentTop = inner.getBoundingClientRect().top + window.scrollY;
-      window.scrollTo({ top: transferScroll ? Math.max(0, documentTop - previousTop) : 0, behavior: "instant" });
-    } else {
-      if (state.unpinReader) state.unpinReader();
-      alignOverlay();
-      if (transferScroll) inner.scrollTop = Math.max(0, inner.getBoundingClientRect().top - previousTop);
-    }
-  }
-
-  function syncReviewLayout() {
-    if (state.overlay.hidden || state.mode !== "quiz" || state.reviewFlow === phoneReview.matches) return;
-    clearDrag();
-    clearEffects();
-    setReviewLayout(phoneReview.matches, true);
+    resetOverlay();
   }
 
   function showOverlay() {
-    if (!state.overlay.hidden) return;
     state.lockY = window.scrollY || document.documentElement.scrollTop || 0;
+    document.body.style.top = "-" + state.lockY + "px";
+    document.body.classList.add("sk-lock");
     state.overlay.hidden = false;
-    state.overlay.toggleAttribute("data-sk-review", state.mode === "quiz");
-    shieldPage(true);
-    resetOverlay();
-    setReviewLayout(state.mode === "quiz" && phoneReview.matches, false);
+    alignOverlay();
     window.requestAnimationFrame(alignOverlay);
   }
 
   function hideOverlay() {
     var y = state.lockY || 0;
     state.overlay.hidden = true;
-    state.overlay.classList.remove("sk-flow");
-    state.reviewFlow = false;
-    if (state.unpinReader) state.unpinReader();
     state.overlay.style.top = "";
     state.overlay.style.left = "";
     resetOverlay();
-    document.body.classList.remove("sk-lock", "sk-review-flow");
+    document.body.classList.remove("sk-lock");
     document.body.style.top = "";
-    window.scrollTo({ top: y, behavior: "instant" });
-    shieldPage(false);
+    window.scrollTo(0, y);
   }
 
   function markWelcome() {
@@ -731,10 +472,10 @@
     state.recall.hidden = false;
   }
 
-  function renderWelcome(event) {
+  function renderWelcome() {
     var line = state.welcomeLines[state.welcomeAt];
     if (!line) {
-      finishWelcome(event);
+      finishWelcome();
       return;
     }
     state.choicesEl.textContent = "";
@@ -744,19 +485,11 @@
     paintLine(line);
   }
 
-  function finishWelcome(event) {
-    var copy = takeOverlay();
-    var moving = copy && !SkyMotion.preference.matches;
-    var portrait = moving && paintedImage(state.sprite);
-    var lefts = new Map();
-    if (moving) document.querySelectorAll(".wrap").forEach(function (wrap) { lefts.set(wrap, wrap.getBoundingClientRect().left); });
-    clearEffects();
+  function finishWelcome() {
     markWelcome();
     hideOverlay();
     state.mode = "dock";
     showDock();
-    focusOn(state.mini);
-    releaseWelcome(copy, portrait, lefts, inputType(event));
   }
 
   function openWelcome() {
@@ -768,7 +501,6 @@
     if (state.dock) state.dock.hidden = true;
     showOverlay();
     renderWelcome();
-    focusOn(state.textEl);
   }
 
   function onMini() {
@@ -823,18 +555,14 @@
     button.className = "sk-review-btn";
     button.textContent = "和深葵夜一起复习";
     button.addEventListener("click", openQuiz);
-    state.reviewButton = button;
     holder.appendChild(button);
     var list = section.querySelector("ol.exercises");
     if (list) list.insertAdjacentElement("afterend", holder);
     else heading.insertAdjacentElement("afterend", holder);
   }
 
-  function openQuiz(event) {
+  function openQuiz() {
     if (!state.bank) return;
-    var wasOpen = !state.overlay.hidden;
-    var source = !wasOpen && (buttonBox(flightBox) || buttonBox(event && event.currentTarget) || buttonBox(state.reviewButton));
-    clearEffects();
     state.quiz = {
       index: -1,
       phase: "intro",
@@ -854,15 +582,12 @@
     }
     showOverlay();
     renderQuiz();
-    focusOn(state.textEl);
-    if (!wasOpen) revealReview(source, inputType(event));
   }
 
   function renderQuiz() {
     var quiz = state.quiz;
     var bank = state.bank;
     if (!quiz || !bank) return;
-    var moveFocus = state.overlay.contains(document.activeElement) && document.activeElement !== state.skip;
     state.choicesEl.textContent = "";
     if (quiz.phase === "intro") {
       state.progressEl.textContent = "";
@@ -887,7 +612,6 @@
         });
         state.choicesEl.appendChild(button);
       });
-      if (moveFocus) focusOn(state.choicesEl.firstElementChild);
       return;
     }
     if (quiz.phase === "react") {
@@ -896,11 +620,9 @@
       state.hintEl.hidden = false;
       state.hintEl.textContent = quiz.reactAt < quiz.reactLines.length - 1 ? "点击继续" : "点击下一题";
       paintLine(line);
-      if (moveFocus || document.activeElement === document.body) focusOn(state.textEl);
       return;
     }
     renderSummary();
-    if (moveFocus) focusOn(state.choicesEl.firstElementChild);
   }
 
   function grade(index) {
@@ -998,20 +720,8 @@
     state.choicesEl.appendChild(button);
   }
 
-  function endReview() {
-    var origin = flightBox || state.box;
-    var first = origin.getBoundingClientRect();
-    var radius = parseFloat(getComputedStyle(origin).borderTopLeftRadius) || 0;
-    var copy = takeOverlay();
-    clearEffects();
-    clearDrag();
+  function closeQuiz() {
     hideOverlay();
-    return { copy: copy, first: first, radius: radius };
-  }
-
-  function closeQuiz(event, velocity) {
-    if (state.overlay.hidden) return;
-    var from = endReview();
     state.mode = "dock";
     state.skip.textContent = "跳过";
     if (state.resume) {
@@ -1020,15 +730,12 @@
     }
     if (state.hidden) state.recall.hidden = false;
     else showDock();
-    var target = buttonBox(state.reviewButton);
-    focusOn(target ? state.reviewButton : state.hidden ? state.recall : state.mini);
-    exitReview(from.copy, from.first, from.radius, target, inputType(event), velocity);
   }
 
-  function jumpTo(href, fromSummary, event) {
+  function jumpTo(href, fromSummary) {
     var quiz = state.quiz;
     if (quiz) quiz.afterJump = fromSummary ? "summary" : "next";
-    var from = endReview();
+    hideOverlay();
     if (!state.resume) {
       var button = document.createElement("button");
       button.type = "button";
@@ -1043,8 +750,6 @@
       if (target) {
         var top = target.getBoundingClientRect().top + (window.scrollY || document.documentElement.scrollTop || 0);
         window.scrollTo(0, Math.max(0, top - 12));
-        target.setAttribute("tabindex", "-1");
-        focusOn(target);
       }
       try {
         history.replaceState(null, "", href);
@@ -1052,13 +757,9 @@
         /* 地址改不了时，页面仍然会滚到那一节。 */
       }
     }
-    if (!target) focusOn(state.resume);
-    exitReview(from.copy, from.first, from.radius, buttonBox(state.resume), inputType(event));
   }
 
-  function resumeQuiz(event) {
-    var source = buttonBox(flightBox) || buttonBox(state.resume);
-    clearEffects();
+  function resumeQuiz() {
     if (state.resume) {
       state.resume.remove();
       state.resume = null;
@@ -1072,24 +773,20 @@
     showOverlay();
     if (quiz.afterJump !== "next") renderQuiz();
     quiz.afterJump = "";
-    resetOverlay();
     alignOverlay();
-    focusOn(state.choicesEl.firstElementChild || state.textEl);
-    revealReview(source, inputType(event));
   }
 
   function onOverlayClick(event) {
-    if (event.detail > 0 && performance.now() < ignoreClickUntil && !event.target.closest("button, a")) return;
     var link = event.target.closest && event.target.closest("a[data-sk-jump]");
     if (link) {
       event.preventDefault();
-      jumpTo(link.getAttribute("href"), link.getAttribute("data-sk-jump") === "summary", event);
+      jumpTo(link.getAttribute("href"), link.getAttribute("data-sk-jump") === "summary");
       return;
     }
     if (event.target.closest && event.target.closest("button")) return;
     if (state.mode === "welcome") {
       state.welcomeAt += 1;
-      renderWelcome(event);
+      renderWelcome();
       return;
     }
     if (state.mode !== "quiz" || !state.quiz) return;
@@ -1108,93 +805,15 @@
       return;
     }
     if (event.key === "Escape") {
-      if (state.mode === "welcome") finishWelcome(event);
-      else if (state.mode === "quiz") closeQuiz(event);
-      return;
-    }
-    if (event.key === "Tab") {
-      var controls = Array.from(state.overlay.querySelectorAll("button:not([disabled]), a[href]")).filter(function (el) {
-        return el.getClientRects().length;
-      });
-      var active = document.activeElement;
-      if (controls.length && (!controls.includes(active) || active === (event.shiftKey ? controls[0] : controls[controls.length - 1]))) {
-        event.preventDefault();
-        var next = event.shiftKey ? controls[controls.length - 1] : controls[0];
-        focusOn(next);
-        if (state.reviewFlow) next.scrollIntoView({ block: "nearest", behavior: "instant" });
-      }
+      if (state.mode === "welcome") finishWelcome();
+      else if (state.mode === "quiz") closeQuiz();
       return;
     }
     if (event.key !== "Enter" && event.key !== " " && event.key !== "ArrowRight") return;
     var tag = event.target && event.target.tagName;
     if (tag === "BUTTON" || tag === "A" || tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
     event.preventDefault();
-    onOverlayClick({ target: state.overlay, detail: 0, type: "keydown", preventDefault: function () {} });
-  }
-
-  function clearDrag() {
-    var id = drag && drag.id;
-    drag = null;
-    if (id != null && state.overlay.hasPointerCapture(id)) state.overlay.releasePointerCapture(id);
-    state.stage.style.transform = "";
-    state.stage.style.opacity = "";
-    state.backdrop.style.opacity = "";
-  }
-
-  function dragStart(event) {
-    if (!canAnimate() || event.pointerType !== "touch" || !event.isPrimary || state.mode !== "quiz" ||
-        (!state.reviewFlow && !window.matchMedia("(max-width: 860px)").matches) ||
-        !event.target.closest(state.reviewFlow ? ".sk-name" : ".sk-figure, .sk-name")) return;
-    ignoreClickUntil = 0;
-    drag = { id: event.pointerId, x: event.clientX, y: event.clientY, last: event.clientY, time: performance.now(), velocity: 0, dy: 0 };
-  }
-
-  function dragMove(event) {
-    if (!drag || drag.id !== event.pointerId) return;
-    var dy = event.clientY - drag.y;
-    if (!drag.active) {
-      if (Math.abs(event.clientX - drag.x) > 12 && Math.abs(event.clientX - drag.x) > Math.abs(dy)) { clearDrag(); return; }
-      if (dy < 6) return;
-      clearEffects();
-      drag.active = true;
-      state.overlay.setPointerCapture(event.pointerId);
-    }
-    var now = performance.now();
-    drag.velocity = 0.4 * drag.velocity + 0.6 * (event.clientY - drag.last) / Math.max(4, now - drag.time);
-    drag.time = now;
-    drag.last = event.clientY;
-    drag.dy = Math.max(0, dy);
-    var fraction = Math.min(1, drag.dy / Math.min(280, window.innerHeight * 0.45));
-    if (SkyMotion.preference.matches) state.stage.style.opacity = 1 - 0.2 * fraction;
-    else {
-      state.stage.style.transform = SkyMotion.transform(0, drag.dy, 1 - 0.18 * fraction, 1 - 0.18 * fraction);
-      state.backdrop.style.opacity = 1 - 0.55 * fraction;
-    }
-  }
-
-  function dragEnd(event) {
-    /* 触屏起初由立绘隐式捕获；转交给浮层并不是手势取消。 */
-    if (event.type === "lostpointercapture" && event.target !== state.overlay) return;
-    if (!drag || drag.id !== event.pointerId) return;
-    if (!drag.active) { clearDrag(); return; }
-    ignoreClickUntil = performance.now() + 450;
-    var velocity = performance.now() - drag.time < 100 ? drag.velocity : 0;
-    var threshold = Math.min(280, window.innerHeight * 0.45);
-    if (event.type === "pointerup" && drag.dy + velocity * 125 > threshold / 2) {
-      closeQuiz(event, velocity);
-      return;
-    }
-    var from = state.stage.style.transform;
-    var stageOpacity = Number(state.stage.style.opacity);
-    var opacity = Number(state.backdrop.style.opacity);
-    clearDrag();
-    if (SkyMotion.preference.matches) {
-      fade(state.stage, SkyMotion.duration("review"), stageOpacity, 1, 0);
-      return;
-    }
-    var time = Math.max(150, SkyMotion.duration("review") * 0.55 / (1 + Math.abs(velocity)));
-    animate(state.stage, [{ transform: from }, { transform: "none" }], time);
-    fade(state.backdrop, time, opacity, 1, 0);
+    onOverlayClick({ target: state.overlay, preventDefault: function () {} });
   }
 
   function buildShell() {
@@ -1205,15 +824,14 @@
     overlay.setAttribute("aria-modal", "true");
     overlay.setAttribute("aria-label", "深葵夜");
     overlay.innerHTML =
-      '<div class="sk-backdrop" aria-hidden="true"></div>' +
-      '<div class="sk-skip-track"><button type="button" class="sk-skip">跳过</button></div>' +
+      '<button type="button" class="sk-skip">跳过</button>' +
       '<div class="sk-stage">' +
         '<div class="sk-figure"><img class="sk-sprite" alt="深葵夜"></div>' +
         '<div class="sk-box">' +
           '<div class="sk-name"></div>' +
           '<div class="sk-progress"></div>' +
           '<div class="sk-body">' +
-            '<div class="sk-text" aria-live="polite" tabindex="-1"></div>' +
+            '<div class="sk-text" aria-live="polite"></div>' +
             '<p class="sk-hint">点击继续</p>' +
           "</div>" +
           '<div class="sk-choices"></div>' +
@@ -1222,29 +840,19 @@
     document.body.appendChild(overlay);
     state.overlay = overlay;
     state.sprite = overlay.querySelector(".sk-sprite");
-    state.backdrop = overlay.querySelector(".sk-backdrop");
-    state.stage = overlay.querySelector(".sk-stage");
-    state.figure = overlay.querySelector(".sk-figure");
-    state.box = overlay.querySelector(".sk-box");
     state.nameEl = overlay.querySelector(".sk-name");
     state.progressEl = overlay.querySelector(".sk-progress");
     state.textEl = overlay.querySelector(".sk-text");
-    state.reviewBody = overlay.querySelector(".sk-body");
     state.choicesEl = overlay.querySelector(".sk-choices");
     state.hintEl = overlay.querySelector(".sk-hint");
     state.skip = overlay.querySelector(".sk-skip");
     state.nameEl.textContent = persona().name || "深葵夜";
     state.skip.addEventListener("click", function (event) {
       event.stopPropagation();
-      if (state.mode === "welcome") finishWelcome(event);
-      else if (state.mode === "quiz") closeQuiz(event);
+      if (state.mode === "welcome") finishWelcome();
+      else if (state.mode === "quiz") closeQuiz();
     });
     overlay.addEventListener("click", onOverlayClick);
-    overlay.addEventListener("pointerdown", dragStart);
-    overlay.addEventListener("pointermove", dragMove);
-    overlay.addEventListener("pointerup", dragEnd);
-    overlay.addEventListener("pointercancel", dragEnd);
-    overlay.addEventListener("lostpointercapture", dragEnd);
 
     var dock = document.createElement("div");
     dock.className = "sk-dock";
@@ -1257,8 +865,7 @@
     state.dock = dock;
     state.bubble = dock.querySelector(".sk-bubble");
     state.miniImg = dock.querySelector(".sk-mini img");
-    state.mini = dock.querySelector(".sk-mini");
-    state.mini.addEventListener("click", onMini);
+    dock.querySelector(".sk-mini").addEventListener("click", onMini);
     dock.querySelector(".sk-hide").addEventListener("click", function (event) {
       event.stopPropagation();
       onHide();
@@ -1274,11 +881,6 @@
     state.recall = recall;
 
     document.addEventListener("keydown", onKey);
-    function resetMotion() { clearDrag(); clearEffects(); }
-    window.addEventListener("resize", resetMotion);
-    if (phoneReview.addEventListener) phoneReview.addEventListener("change", syncReviewLayout);
-    window.addEventListener("pagehide", resetMotion);
-    if (canAnimate() && SkyMotion.preference.addEventListener) SkyMotion.preference.addEventListener("change", resetMotion);
     preload();
   }
 
