@@ -13,12 +13,14 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0b1020">
     <title>实用星座模拟 · 星空坐标学</title>
     <meta name="description" content="全天 88 个星座的棍棒图、中文名和边界。可调地面透明和银河，按名字搜索并转到那个星座。">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="constellations-theme.css">
     <link rel="stylesheet" href="stargazing.css">
     <link rel="stylesheet" href="constellations.css">
+    <script src="motion.js"></script>
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
   </head>
   <body data-sky="iau">
@@ -32,9 +34,9 @@
           星空坐标学
         </a>
         <p class="kicker">练习</p>
-        <h1>实用星座模拟</h1>
-        <p class="lead">
-          全天 88 个国际天文学联合会星座。每个星座只画组成常用棍棒图的那些星，不铺暗星，也不画星云。可以站在地面抬头看，也可以退到天球外面看整球。坐标用 J2000.0，不算岁差，和第六课、虚拟观星是同一套公式。
+        <h1>实用<wbr>星座<wbr>模拟</h1>
+        <p class="lead prose-measure">
+          全天88 个国际天文学联合会星座。每个星座只画组成常用棍棒图的那些星，不铺暗星，也不画星云。可以站在地面抬头看，也可以退到天球外面看整球。坐标用J2000.0，不算岁差，和第六课、虚拟观星是同一套公式。
         </p>
       </div>
     </header>
@@ -144,7 +146,7 @@
         <ul class="sg-checks sg-checks-scroll sg-follow" id="sg-cons"></ul>
         <p class="sg-note">取消勾选就藏起那个星座。全选、全不选包括搜索时被藏起来的星座。巨蛇座有头、尾两截，仍算一个星座。</p>
 
-        <h2>地面和银河</h2>
+        <h2>地面和<wbr>银河</h2>
         <label class="sg-check">
           <input type="checkbox" id="sg-ground" checked>
           显示地面
@@ -176,7 +178,7 @@
         <div class="sg-row">
           <button type="button" class="sg-btn" id="sg-gyro" aria-pressed="false">陀螺仪</button>
         </div>
-        <p class="sg-note">打开后，把手机屏幕对着天空。电脑上通常没有这个传感器，仍可用手指拖动。iPhone 会先询问权限。</p>
+        <p class="sg-note">打开后，把手机屏幕对着天空。电脑上通常没有这个传感器，仍可用手指拖动。iPhone会先询问权限。</p>
 
         <h2>怎么转</h2>
         <p class="sg-note">
@@ -184,7 +186,7 @@
         </p>
         <p id="sg-vega" class="sg-note"></p>
         <p class="sg-note">
-          北京、北纬 40°（取整）、东经 116.4°、2026-03-20 20:00（UTC+8）：织女的高度约 −10.00°，方位约 11.98°；天狼的高度约 31.98°，方位约 194.88°；北极星的高度约 40.17°，接近纬度。地址后面也可以加 <code>?time=2026-03-20T20:00&amp;lat=40&amp;lon=116.4&amp;tz=8</code>。
+          北京、北纬40°（取整）、东经116.4°、2026-03-20 20:00（UTC+8）：织女的高度约 −10.00°，方位约11.98°；天狼的高度约31.98°，方位约194.88°；北极星的高度约40.17°，接近纬度。地址后面也可以加 <code>?time=2026-03-20T20:00&amp;lat=40&amp;lon=116.4&amp;tz=8</code>。
         </p>
       </form>
     </main>
@@ -192,18 +194,18 @@
     <footer class="site-footer">
       <div class="wrap sg-head-wrap">
         <p>
-          棍棒图改编自 Stellarium 贡献者的 modern 星空文化，恒星位置改编自 David Nash 的 HYG 星表第 4 版。两份数据都是
-          <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>，不是 GPL，也不是公有领域。
-          摘录和改写后的 <code>constellations-data.js</code> 同样以 CC BY-SA 4.0 发布。
+          棍棒图改编自Stellarium贡献者的modern星空文化，恒星位置改编自David Nash的HYG星表第4版。两份数据都是
+          <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>，不是GPL，也不是公有领域。
+          摘录和改写后的 <code>constellations-data.js</code> 同样以CC BY-SA 4.0发布。
           来源：<a href="https://github.com/Stellarium/stellarium">Stellarium</a>、
           <a href="https://github.com/astronexus/HYG-Database">HYG</a>。
-          星座边界是国际天文学联合会 1930 年划定的，边表用 P. Barbier 的 edges_18.txt（历元 B1875），再按 Meeus《天文算法》的岁差变到 J2000。
+          星座边界是国际天文学联合会1930 年划定的，边表用P. Barbier的edges_18.txt（历元B1875），再按Meeus《天文算法》的岁差变到J2000。
           银河是沿银道的示意光带。不算星云，也不含岁差改正和大气折射。季节练习仍在<a href="stargazing.html">虚拟观星</a>。
         </p>
       </div>
     </footer>
     <noscript>
-      <p class="noscript-note wrap">没有 JavaScript 时，星图画不出来。课文和星表不依赖这一页。</p>
+      <p class="noscript-note wrap">没有JavaScript时，星图画不出来。课文和星表不依赖这一页。</p>
     </noscript>
     <script src="calculator.js"></script>
     <script src="stargaze-astro.js"></script>

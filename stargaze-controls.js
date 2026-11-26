@@ -17,6 +17,12 @@ var StarGazeControls = (function () {
   var dragTotal = 0;
   var pinch = null;
   var gyroTimer = 0;
+  var filterLayer, filterScroll;
+  var filterMoves = new Map();
+  var cameraMove = null;
+  var cameraFade = null;
+  var oldSky = null;
+  var indicators = new Map();
 
   var canvas;
   var timeEl;
@@ -213,7 +219,106 @@ var StarGazeControls = (function () {
     return bad;
   }
 
-  function applySearch() {
+  function stopFilterMotion() {
+    filterMoves.forEach(function (move, row) {
+      move.animation.cancel();
+      row.style.opacity = "";
+    });
+    filterMoves.clear();
+    if (filterLayer) filterLayer.remove();
+    filterLayer = null;
+  }
+
+  function listClip(list) {
+    var a = list.getBoundingClientRect();
+    var b = list.closest(".sg-panel").getBoundingClientRect();
+    return {
+      left: Math.max(0, a.left, b.left), top: Math.max(0, a.top, b.top),
+      right: Math.min(window.innerWidth, a.right, b.right),
+      bottom: Math.min(window.innerHeight, a.bottom, b.bottom)
+    };
+  }
+
+  function intersects(a, b) {
+    return a.width && a.height && a.right > b.left && a.left < b.right && a.bottom > b.top && a.top < b.bottom;
+  }
+
+  function scrollStamp(list) {
+    return [list.scrollTop, list.closest(".sg-panel").scrollTop, window.scrollY].join(":");
+  }
+
+  function moveFilteredRows(list, items, before, oldClip, leftEdge) {
+    var newClip = listClip(list);
+    var clip = {
+      top: Math.min(oldClip.top, newClip.top), left: Math.min(oldClip.left, newClip.left),
+      bottom: Math.max(oldClip.bottom, newClip.bottom), right: Math.max(oldClip.right, newClip.right)
+    };
+    if (clip.bottom <= clip.top || clip.right <= clip.left) return;
+    var reduced = SkyMotion.preference.matches;
+    var time = SkyMotion.duration("reflow");
+    if (!(time > 0)) return;
+    var jobs = [];
+    var anchor = list.getBoundingClientRect();
+    for (var i = 0; i < items.length; i++) {
+      var row = items[i];
+      var first = before.get(row);
+      var last = row.classList.contains("is-hidden") ? null : row.getBoundingClientRect();
+      if ((!first || !intersects(first.rect, oldClip)) && (!last || !intersects(last, newClip))) continue;
+      if (row.contains(document.activeElement)) continue;
+      var end = last || first.rect;
+      var dx = first ? first.rect.left - end.left : 0;
+      var dy = first ? first.rect.top - end.top : 0;
+      var startOpacity = first ? first.opacity : 0;
+      var endOpacity = last ? 1 : 0;
+      if ((reduced || (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5)) && startOpacity === endOpacity) continue;
+      var a = reduced ? "none" : SkyMotion.transform(dx, dy);
+      var frames = [{ transform: a, opacity: startOpacity }, { transform: "none", opacity: endOpacity }];
+      if (!reduced && first && last && Math.abs((first.rect.left - leftEdge) - (last.left - anchor.left)) > end.width * 0.6) {
+        var out = first.rect.left - leftEdge < end.width / 2 ? 14 : -14;
+        frames = [
+          frames[0], { offset: 0.30, opacity: 0, transform: SkyMotion.transform(dx + out, dy) },
+          { offset: 0.52, opacity: 0, transform: SkyMotion.transform(out, 0) }, frames[1]
+        ];
+      } else if (!first && !reduced) {
+        frames[0].transform = SkyMotion.transform(-8, 0);
+        frames.splice(1, 0, { offset: 0.5, opacity: 0, transform: SkyMotion.transform(-4, 0) });
+      } else if (!last) {
+        if (!reduced) frames.splice(1, 0, { offset: 0.32, opacity: 0, transform: "none" });
+      }
+      jobs.push({ row: row, end: end, frames: frames, visible: !!last });
+    }
+    if (!jobs.length) return;
+    var layer = document.createElement("ul");
+    layer.className = "sg-filter-layer";
+    layer.inert = true;
+    layer.setAttribute("aria-hidden", "true");
+    layer.style.clipPath = "inset(" + clip.top + "px " + (window.innerWidth - clip.right) + "px " +
+      (window.innerHeight - clip.bottom) + "px " + clip.left + "px)";
+    filterLayer = layer;
+    filterScroll = scrollStamp(list);
+    document.body.appendChild(layer);
+    jobs.forEach(function (job) {
+      var row = job.row;
+      var ghost = row.cloneNode(true);
+      ghost.classList.remove("is-hidden");
+      ghost.querySelectorAll("[data-cons], [data-jump]").forEach(function (el) {
+        el.removeAttribute("data-cons");
+        el.removeAttribute("data-jump");
+      });
+      ghost.style.cssText = "left:" + job.end.left + "px;top:" + job.end.top + "px;width:" + job.end.width + "px";
+      layer.appendChild(ghost);
+      if (job.visible) row.style.opacity = "0";
+      var animation = SkyMotion.play(ghost, job.frames, time, "ease-in-out", function () {
+        row.style.opacity = "";
+        ghost.remove();
+        filterMoves.delete(row);
+        if (!filterMoves.size) stopFilterMotion();
+      });
+      filterMoves.set(row, { ghost: ghost, animation: animation });
+    });
+  }
+
+  function applySearch(animate) {
     var input = $("sg-find");
     var note = $("sg-find-note");
     if (!input) return null;
@@ -233,9 +338,24 @@ var StarGazeControls = (function () {
       });
     }
     var best = q ? bestMatch(q, records) : null;
+    var list = $("sg-cons");
+    records.forEach(function (record) { record.show = !q || scoreRecord(q, record) > 0; });
+    var change = records.some(function (record) { return record.show === record.li.classList.contains("is-hidden"); });
+    var before, oldClip, leftEdge;
+    if (animate && change && list.animate && typeof SkyMotion !== "undefined") {
+      oldClip = listClip(list);
+      leftEdge = list.getBoundingClientRect().left;
+      before = new Map();
+      items.forEach(function (row) {
+        var move = filterMoves.get(row);
+        var rect = (move ? move.ghost : row).getBoundingClientRect();
+        if (rect.width && rect.height) before.set(row, { rect: rect, opacity: move ? Number(getComputedStyle(move.ghost).opacity) : 1 });
+      });
+      stopFilterMotion();
+    }
     var n = 0;
     for (i = 0; i < records.length; i++) {
-      var show = !q || scoreRecord(q, records[i]) > 0;
+      var show = records[i].show;
       if (show) {
         records[i].li.classList.remove("is-hidden");
         n += 1;
@@ -248,10 +368,12 @@ var StarGazeControls = (function () {
       else if (!n) note.textContent = "没有找到这个星座。可以试中文名或拉丁名。";
       else note.textContent = "找到 " + n + " 个。回车转到最匹配的一个。";
     }
+    if (before) moveFilteredRows(list, items, before, oldClip, leftEdge);
     return best ? best.li : null;
   }
 
   function markCurrent(id) {
+    stopFilterMotion();
     var rows = document.querySelectorAll("#sg-cons li");
     var i;
     for (i = 0; i < rows.length; i++) rows[i].classList.remove("is-current");
@@ -265,7 +387,63 @@ var StarGazeControls = (function () {
     }
   }
 
-  function centerConstellation(id) {
+  function cancelCamera() {
+    cameraMove = null;
+    if (cameraFade) cameraFade.cancel();
+    cameraFade = null;
+    if (oldSky) oldSky.remove();
+    oldSky = null;
+  }
+
+  function turnCamera(target, input) {
+    var outside = state.view === "outside";
+    var fromAz = state.orbitAz;
+    var fromEl = state.orbitEl;
+    var interpolate = outside ? null : StarGazeAstro.basisTurn(state.basis, target.basis);
+    var finish = function () {
+      if (outside) {
+        state.orbitAz = target.az;
+        state.orbitEl = target.el;
+      } else state.basis = target.basis;
+    };
+    cancelCamera();
+    if (!input || typeof SkyMotion === "undefined" || !SkyMotion.visible(canvas.getBoundingClientRect()) || pointerIds().length) {
+      finish();
+      return;
+    }
+    var duration = SkyMotion.duration("turn", input === "keyboard");
+    if (SkyMotion.preference.matches || !(duration > 0)) {
+      if (duration > 0 && canvas.animate) {
+        oldSky = document.createElement("canvas");
+        oldSky.className = "sg-sky-outgoing";
+        oldSky.setAttribute("aria-hidden", "true");
+        oldSky.width = canvas.width;
+        oldSky.height = canvas.height;
+        oldSky.getContext("2d").drawImage(canvas, 0, 0);
+        canvas.after(oldSky);
+        cameraFade = SkyMotion.play(oldSky, [{ opacity: 1 }, { opacity: 0 }], duration, "linear", cancelCamera);
+      }
+      finish();
+      return;
+    }
+    cameraMove = { start: performance.now(), duration: duration, finish: finish, draw: function (t) {
+      if (outside) {
+        state.orbitAz = StarGazeAstro.smoothAngle(fromAz, target.az, t);
+        state.orbitEl = fromEl + (target.el - fromEl) * t;
+      } else state.basis = interpolate(t);
+    } };
+  }
+
+  function advanceCamera(now) {
+    if (!cameraMove) return;
+    var t = (now - cameraMove.start) / cameraMove.duration;
+    if (t >= 1 || SkyMotion.preference.matches) {
+      cameraMove.finish();
+      cameraMove = null;
+    } else if (t > 0) cameraMove.draw(SkyMotion.settleProgress(t));
+  }
+
+  function centerConstellation(id, input) {
     if (!catalog || !catalog.byId || !catalog.byId[id]) return;
     var meta = catalog.byId[id];
     var box = document.querySelector('#sg-cons input[data-cons="' + id + '"]');
@@ -279,8 +457,8 @@ var StarGazeControls = (function () {
     state.lst = lst;
     if (state.view === "outside") {
       var v = StarGazeAstro.equatorialVector(meta.ra, meta.dec, lst);
-      state.orbitEl = Math.asin(clamp(v[2], -1, 1)) * 180 / Math.PI;
-      state.orbitAz = Math.atan2(v[1], v[0]) * 180 / Math.PI;
+      turnCamera({ el: Math.asin(clamp(v[2], -1, 1)) * 180 / Math.PI,
+        az: Math.atan2(v[1], v[0]) * 180 / Math.PI }, input);
       status("已从天球外面对准" + meta.name + "（" + meta.latin + "）。");
       return;
     }
@@ -289,7 +467,7 @@ var StarGazeControls = (function () {
       return;
     }
     var hor = StarGazeAstro.horizontal(meta.ra, meta.dec, lst, state.lat);
-    state.basis = StarGazeAstro.lookAtAltAz(hor.alt, hor.az);
+    turnCamera({ basis: StarGazeAstro.lookAtAltAz(hor.alt, hor.az) }, input);
     if (hor.alt < 0 && state.groundOn && state.groundAlpha > 0.95) {
       status(meta.name + "在地平线以下（高度 " + SkyCalc.formatDeg(hor.alt, 0) + "）。把地面关掉或调透明就能看到。");
     } else {
@@ -340,18 +518,85 @@ var StarGazeControls = (function () {
     status("");
   }
 
-  function syncSpeedButtons() {
-    var buttons = document.querySelectorAll("[data-speed]");
-    var i;
-    for (i = 0; i < buttons.length; i++) {
-      var on = Number(buttons[i].getAttribute("data-speed")) === state.speed;
-      buttons[i].setAttribute("aria-pressed", on ? "true" : "false");
+  function syncSegments(buttons, active, input) {
+    if (!active) return;
+    var row = active.parentElement;
+    var previous = Array.prototype.find.call(buttons, function (button) { return button.getAttribute("aria-pressed") === "true"; });
+    if (previous === active) return;
+    var running = indicators.get(row);
+    var from = (running ? running.element : previous);
+    var first = from && from.getBoundingClientRect();
+    var outgoingColor = previous && getComputedStyle(previous).color;
+    var incomingColor = getComputedStyle(active).color;
+    if (running) running.stop();
+    buttons.forEach(function (button) { button.setAttribute("aria-pressed", button === active ? "true" : "false"); });
+    if (!input || !first || typeof SkyMotion === "undefined" || !active.animate) return;
+    var last = active.getBoundingClientRect();
+    var time = SkyMotion.duration("indicator", input === "keyboard");
+    if (!(time > 0) || !SkyMotion.visible(last)) return;
+    var pill = document.createElement("span");
+    pill.className = "sg-indicator";
+    pill.setAttribute("aria-hidden", "true");
+    row.classList.add("sg-indicator-moving");
+    active.classList.add("sg-segment-active");
+    var origin = row.getBoundingClientRect();
+    pill.style.cssText = "left:" + (last.left - origin.left) + "px;top:" + (last.top - origin.top) +
+      "px;width:" + last.width + "px;height:" + last.height + "px";
+    row.appendChild(pill);
+    var x = first.left - last.left, y = first.top - last.top;
+    var width = first.width / last.width;
+    var frames;
+    if (SkyMotion.preference.matches) {
+      frames = [{ opacity: 0.55 }, { opacity: 1 }];
+    } else if (Math.abs(y) > 4) {
+      /* 换行时不斜穿别的按钮。 */
+      frames = [{ transform: SkyMotion.transform(x, y, width), opacity: 1 },
+        { offset: 0.32, transform: SkyMotion.transform(x + 10, y, width), opacity: 0 },
+        { offset: 0.52, transform: SkyMotion.transform(-10, 0), opacity: 0 },
+        { transform: "none", opacity: 1 }];
+    } else {
+      var stretch = Math.min(0.32, Math.abs(x) / (last.width * 3));
+      frames = [{ transform: SkyMotion.transform(x, y, width), easing: SkyMotion.settle },
+        { offset: 0.38, transform: SkyMotion.transform(x * 0.48 - (x > 0 ? stretch * last.width : 0), last.height * 0.075, (width + 1) / 2 + stretch, 0.85), easing: SkyMotion.settle },
+        { transform: "none" }];
     }
+    var labelAnimations = [];
+    function stop() {
+      if (animation) animation.cancel();
+      labelAnimations.forEach(function (label) { if (label) label.cancel(); });
+      active.classList.remove("sg-segment-active");
+      row.classList.remove("sg-indicator-moving");
+      pill.remove();
+      indicators.delete(row);
+    }
+    var animation = SkyMotion.play(pill, frames, time, "linear", stop);
+    var offColor = getComputedStyle(active).getPropertyValue("--sg-btn-fg").trim();
+    var onColor = getComputedStyle(active).color;
+    var reduced = SkyMotion.preference.matches;
+    if (previous && !reduced) {
+      labelAnimations.push(SkyMotion.play(previous, [{ color: outgoingColor }, { offset: 0.15, color: outgoingColor },
+        { offset: 0.24, color: offColor }, { color: offColor }], time, "linear"));
+    }
+    if (!reduced) {
+      labelAnimations.push(SkyMotion.play(active, [{ color: incomingColor }, { offset: 0.55, color: offColor },
+        { offset: 0.62, color: onColor }, { color: onColor }], time, "linear"));
+    }
+    indicators.set(row, { element: pill, stop: stop });
   }
 
-  function syncViewButtons() {
-    $("sg-view-ground").setAttribute("aria-pressed", state.view === "ground" ? "true" : "false");
-    $("sg-view-outside").setAttribute("aria-pressed", state.view === "outside" ? "true" : "false");
+  function stopIndicators() {
+    indicators.forEach(function (indicator) { indicator.stop(); });
+  }
+
+  function syncSpeedButtons(input) {
+    var buttons = document.querySelectorAll("[data-speed]");
+    var active = Array.prototype.find.call(buttons, function (button) { return Number(button.getAttribute("data-speed")) === state.speed; });
+    syncSegments(buttons, active, input);
+  }
+
+  function syncViewButtons(input) {
+    var buttons = [$("sg-view-ground"), $("sg-view-outside")];
+    syncSegments(buttons, state.view === "ground" ? buttons[0] : buttons[1], input);
   }
 
   function syncPlay() {
@@ -446,6 +691,7 @@ var StarGazeControls = (function () {
 
   function onPointerDown(e) {
     if (e.pointerType === "mouse" && e.button !== 0) return;
+    cancelCamera();
     pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
     try {
       canvas.setPointerCapture(e.pointerId);
@@ -493,7 +739,7 @@ var StarGazeControls = (function () {
     if (pointerIds().length < 2) pinch = null;
     if (pointerIds().length === 0) {
       canvas.classList.remove("is-dragging");
-      if (had && dragTotal < 8) {
+      if (had && dragTotal < 8 && e.type !== "pointercancel") {
         var pt = canvasPoint(e);
         state.picked = StarGazeRender.hitTest(pt.x, pt.y);
         if (!state.picked) starEl.textContent = "";
@@ -563,6 +809,7 @@ var StarGazeControls = (function () {
       return;
     }
     function begin() {
+      cancelCamera();
       state.gyro = true;
       state.gyroSeen = false;
       state.gyroAbsolute = false;
@@ -595,6 +842,7 @@ var StarGazeControls = (function () {
   }
 
   function resetView() {
+    cancelCamera();
     state.basis = StarGazeAstro.defaultBasis();
     state.zoom = 1;
     state.orbitAz = -42;
@@ -690,14 +938,16 @@ var StarGazeControls = (function () {
     $("sg-form").addEventListener("submit", function (e) {
       e.preventDefault();
     });
-    $("sg-view-ground").addEventListener("click", function () {
+    $("sg-view-ground").addEventListener("click", function (e) {
+      if (state.view !== "ground") cancelCamera();
       state.view = "ground";
-      syncViewButtons();
+      syncViewButtons(e.detail === 0 ? "keyboard" : "pointer");
     });
-    $("sg-view-outside").addEventListener("click", function () {
+    $("sg-view-outside").addEventListener("click", function (e) {
+      if (state.view !== "outside") cancelCamera();
       state.view = "outside";
       if (state.gyro) setGyro(false);
-      syncViewButtons();
+      syncViewButtons(e.detail === 0 ? "keyboard" : "pointer");
     });
     $("sg-reset").addEventListener("click", resetView);
 
@@ -742,9 +992,9 @@ var StarGazeControls = (function () {
     var speeds = document.querySelectorAll("[data-speed]");
     var s;
     for (s = 0; s < speeds.length; s++) {
-      speeds[s].addEventListener("click", function () {
+      speeds[s].addEventListener("click", function (e) {
         state.speed = Number(this.getAttribute("data-speed")) || 1;
-        syncSpeedButtons();
+        syncSpeedButtons(e.detail === 0 ? "keyboard" : "pointer");
       });
     }
     $("sg-now").addEventListener("click", function () {
@@ -799,21 +1049,29 @@ var StarGazeControls = (function () {
 
     var findInput = $("sg-find");
     if (findInput) {
-      findInput.addEventListener("input", applySearch);
+      findInput.addEventListener("input", function () { applySearch(true); });
+      window.addEventListener("scroll", function () {
+        if (filterLayer && scrollStamp($("sg-cons")) !== filterScroll) stopFilterMotion();
+      }, true);
+      window.addEventListener("resize", stopFilterMotion);
+      $("sg-cons").addEventListener("focusin", stopFilterMotion);
+      if (typeof SkyMotion !== "undefined" && SkyMotion.preference.addEventListener) {
+        SkyMotion.preference.addEventListener("change", stopFilterMotion);
+      }
       findInput.addEventListener("keydown", function (e) {
         if (e.key !== "Enter") return;
         e.preventDefault();
         var first = applySearch();
         if (!first) return;
         var jump = first.querySelector("[data-jump]");
-        if (jump) centerConstellation(jump.getAttribute("data-jump"));
+        if (jump) centerConstellation(jump.getAttribute("data-jump"), "keyboard");
       });
     }
     $("sg-form").addEventListener("click", function (e) {
       var node = e.target;
       while (node && node !== $("sg-form")) {
         if (node.getAttribute && node.getAttribute("data-jump")) {
-          centerConstellation(node.getAttribute("data-jump"));
+          centerConstellation(node.getAttribute("data-jump"), e.detail === 0 ? "keyboard" : "pointer");
           return;
         }
         node = node.parentNode;
@@ -826,6 +1084,7 @@ var StarGazeControls = (function () {
     canvas.addEventListener("pointercancel", onPointerUp);
     canvas.addEventListener("wheel", function (e) {
       e.preventDefault();
+      cancelCamera();
       var factor = Math.exp(e.deltaY * 0.0012);
       if (state.view === "outside") {
         state.orbitDist = clamp(state.orbitDist * factor, 1.7, 9);
@@ -837,6 +1096,7 @@ var StarGazeControls = (function () {
     window.addEventListener("keydown", function (e) {
       var tag = e.target && e.target.tagName;
       if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
+      if (/^(Arrow(Left|Right|Up|Down)|[+\-=_])$/.test(e.key)) cancelCamera();
       var step = 22;
       if (e.key === "ArrowLeft") {
         e.preventDefault();
@@ -864,8 +1124,12 @@ var StarGazeControls = (function () {
     });
 
     window.addEventListener("resize", function () {
+      stopIndicators();
       publish();
     });
+    if (typeof SkyMotion !== "undefined" && SkyMotion.preference.addEventListener) {
+      SkyMotion.preference.addEventListener("change", stopIndicators);
+    }
   }
 
   function start() {
@@ -922,6 +1186,7 @@ var StarGazeControls = (function () {
       if (dt > 0.5) dt = 0.5;
       if (dt < 0) dt = 0;
       if (state.playing) state.utcMs += dt * 1000 * state.speed;
+      advanceCamera(t);
       publish();
       window.requestAnimationFrame(frame);
     }

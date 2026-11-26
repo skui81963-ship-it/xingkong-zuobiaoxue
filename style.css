@@ -30,6 +30,9 @@
 */
 html {
   color-scheme: dark;
+  background-color: var(--sky);
+  /* Safari 的系统点击高亮会盖住整块命中区域，不只是控件本身。 */
+  -webkit-tap-highlight-color: transparent;
 }
 
 :root {
@@ -45,7 +48,92 @@ html {
   --font: "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Noto Sans CJK SC",
     "Source Han Sans SC", "Microsoft YaHei", "WenQuanYi Micro Hei", "Heiti SC",
     sans-serif;
+  --motion-fade: 150ms;
+  --motion-reflow: 160ms;
+  --motion-turn: 280ms;
+  --motion-indicator: 280ms;
+  --motion-page: 360ms;
+  --motion-welcome: 350ms;
+  --motion-review: 370ms;
 }
+
+@media (max-width: 860px) {
+  :root {
+    --motion-reflow: 240ms;
+    --motion-turn: 420ms;
+    --motion-indicator: 420ms;
+    --motion-page: 540ms;
+    --motion-welcome: 520ms;
+    --motion-review: 550ms;
+  }
+}
+
+@view-transition { navigation: auto; }
+
+::view-transition {
+  pointer-events: none;
+  background: var(--sky);
+}
+
+::view-transition-group(root),
+::view-transition-group(course-title),
+::view-transition-group(course-brand) {
+  animation-duration: var(--motion-page);
+  animation-timing-function: cubic-bezier(.32, .72, 0, 1);
+}
+
+.course-motion-keyboard::view-transition-group(root),
+.course-motion-keyboard::view-transition-group(course-title),
+.course-motion-keyboard::view-transition-group(course-brand) {
+  animation-duration: calc(var(--motion-page) * 0.75);
+}
+
+::view-transition-image-pair(root),
+::view-transition-image-pair(course-title),
+::view-transition-image-pair(course-brand) { isolation: auto; }
+
+::view-transition-old(root),
+::view-transition-new(root),
+::view-transition-old(course-title),
+::view-transition-new(course-title),
+::view-transition-old(course-brand),
+::view-transition-new(course-brand) {
+  mix-blend-mode: normal;
+  animation-timing-function: linear;
+}
+
+::view-transition-old(root) { animation-name: course-page-out; }
+::view-transition-new(root) { animation-name: course-page-in; }
+
+::view-transition-old(course-title):only-child,
+::view-transition-old(course-brand):only-child { animation-name: course-page-out; }
+::view-transition-new(course-title):only-child,
+::view-transition-new(course-brand):only-child { animation-name: course-page-in; }
+
+::view-transition-old(course-title):not(:only-child),
+::view-transition-old(course-brand):not(:only-child) {
+  width: 100%;
+  height: 100%;
+  animation-name: course-title-out;
+}
+::view-transition-new(course-title):not(:only-child),
+::view-transition-new(course-brand):not(:only-child) {
+  width: 100%;
+  height: 100%;
+  animation-name: course-title-in;
+}
+
+@keyframes course-page-out { from { opacity: 1; } 30%, to { opacity: 0; } }
+@keyframes course-page-in { from, 46% { opacity: 0; } to { opacity: 1; } }
+@keyframes course-title-out { from, 99% { opacity: 1; } to { opacity: 0; } }
+@keyframes course-title-in { from, 99% { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(root) { animation-duration: var(--motion-fade) !important; }
+  ::view-transition-old(root) { animation-name: course-title-in; animation-direction: reverse; }
+  ::view-transition-new(root) { animation-name: course-page-fade; }
+}
+@keyframes course-page-fade { from { opacity: 0; } to { opacity: 1; } }
 
 /* ---------- 2. 全页通用 ---------- */
 
@@ -102,6 +190,12 @@ body {
   outline-offset: 3px;
 }
 
+@media (any-pointer: coarse) {
+  :where(a[href], button, summary, input, select, textarea, label.sg-check):not(:disabled):is(:active, .is-touch-pressed) {
+    opacity: 0.72;
+  }
+}
+
 /*
   跳到正文的链接。平时把它移到屏幕上方外面（top 为负）。
   一旦被 Tab 选中，:focus 把它拉回屏幕内。鼠标用户几乎看不到它。
@@ -133,6 +227,62 @@ body {
 }
 
 /* ---------- 3. 文字 ---------- */
+
+:is(h1, h2, h3, .toc-title) {
+  text-wrap: balance;
+}
+
+:is(p, li, dd, figcaption, .toc-desc, .sk-bubble) {
+  text-wrap: pretty;
+}
+
+:where(output, th, td, .toc-index, .formula, .readout, .calc-headline, .calc-step p,
+    .sg-hud, .sk-progress, #sg-ground-alpha-val, #sg-mw-alpha-val,
+    #sg-vega, #sg-find-note) {
+  font-variant-numeric: tabular-nums;
+}
+
+:is(button, .brand, .toc-index, .toc-status, .badge, .lat-top label,
+    .legend li, .sg-check) {
+  white-space: nowrap;
+}
+
+.truncate-label {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+:where(html:lang(zh), [lang]:lang(zh)) {
+  text-autospace: normal;
+}
+
+:where([lang]:not(:lang(zh)), code, pre, kbd, samp, textarea, input, select,
+    [contenteditable]:not([contenteditable="false"])) {
+  text-autospace: no-autospace;
+}
+
+:where(h1, h2, h3, .toc-title, .brand, .kicker, .toc-status, .badge, .skip-link,
+    .pager a, button, label, summary, .sg-hud p, .sg-status, .sk-hint):lang(zh) {
+  text-spacing-trim: trim-start;
+}
+
+/* Only model-segmented headings use keep-all; unmarked text wraps normally. */
+:is(h1, h2, h3, .toc-title):lang(zh):has(wbr) {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+/* Opt in only substantial body prose, not narrow sidebars, captions or controls. */
+@supports (max-width: round(down, 100%, 1em)) {
+  @media (min-width: 23rem) {
+    p.prose-measure:lang(zh) {
+      max-width: round(down, min(100%, 32em), 1em);
+      text-align: justify;
+    }
+  }
+}
 
 /*
   页头。padding 是内边距，四个数按上、右、下、左。
@@ -259,20 +409,21 @@ strong {
 }
 
 /* 只有真正的链接卡片才变化。即将推出的项是 <div>，点不了，也不伪装成能点。 */
-a.toc-card:hover {
-  border-color: rgba(230, 194, 122, 0.7);
-  background: #1a223c;
-}
+@media (hover: hover) {
+  a.toc-card:hover {
+    border-color: rgba(230, 194, 122, 0.7);
+    background: #1a223c;
+  }
 
-a.toc-card:hover .toc-status {
-  color: var(--gold-strong);
+  a.toc-card:hover .toc-status {
+    color: var(--gold-strong);
+  }
 }
 
 .toc-index {
   flex: 0 0 auto;
   min-width: 1.8rem;
   color: var(--gold);
-  font-variant-numeric: tabular-nums;
   letter-spacing: 0.04em;
 }
 
@@ -330,7 +481,6 @@ a.toc-card:hover .toc-status {
   font-size: 0.82rem;
   letter-spacing: 0.06em;
   line-height: 1.6;
-  white-space: nowrap;
 }
 
 /* 还没写的课，整张卡片淡一点，但文字对比度仍然够读。 */
@@ -442,7 +592,6 @@ figcaption {
 output {
   color: var(--gold-strong);
   font-size: 1.05rem;
-  font-variant-numeric: tabular-nums;
 }
 
 /*
@@ -674,6 +823,14 @@ input[type="range"]::-moz-range-thumb {
   margin: 0.4rem 0 0.25rem;
 }
 
+.answer.answer-outgoing {
+  position: fixed;
+  margin: 0;
+  z-index: 6;
+  list-style: none;
+  pointer-events: none;
+}
+
 .refs li + li {
   margin-top: 0.55rem;
 }
@@ -705,8 +862,10 @@ input[type="range"]::-moz-range-thumb {
   background: var(--sky-raised);
 }
 
-.pager a:hover {
-  border-color: rgba(230, 194, 122, 0.7);
+@media (hover: hover) {
+  .pager a:hover {
+    border-color: rgba(230, 194, 122, 0.7);
+  }
 }
 
 .pager .is-disabled {
@@ -749,7 +908,6 @@ table.data {
   border-collapse: collapse;
   font-size: 0.95rem;
   line-height: 1.45;
-  font-variant-numeric: tabular-nums;
 }
 
 table.data th,
@@ -784,7 +942,6 @@ table.data th {
   padding: 0.45rem 0.75rem;
   background: rgba(230, 194, 122, 0.08);
   border-radius: 8px;
-  font-variant-numeric: tabular-nums;
 }
 
 /* 第六课的输入区。grid 是格子布局：两列，格子之间留缝。 */
