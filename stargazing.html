@@ -10,13 +10,11 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#0b1020">
     <title>虚拟观星 · 星空坐标学</title>
     <meta name="description" content="按当前时间和地点看北天星座：地面上东升西落，或从天球外面看它怎么转。">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="stargazing-theme.css">
     <link rel="stylesheet" href="stargazing.css">
-    <script src="motion.js"></script>
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
   </head>
   <body>
@@ -31,8 +29,8 @@
         </a>
         <p class="kicker">练习</p>
         <h1>虚拟观星</h1>
-        <p class="lead prose-measure">
-          给定时间和地点，看这些北天星座此刻在天球上的什么位置。可以站在地面抬头看，也可以退到天球外面看它怎么转。坐标用J2000.0，不算岁差，和第六课是同一套公式。白天也能看到星星，因为这是坐标模型，不是肉眼的夜景。
+        <p class="lead">
+          给定时间和地点，看这些北天星座此刻在天球上的什么位置。可以站在地面抬头看，也可以退到天球外面看它怎么转。坐标用 J2000.0，不算岁差，和第六课是同一套公式。白天也能看到星星，因为这是坐标模型，不是肉眼的夜景。
         </p>
       </div>
     </header>
@@ -152,7 +150,7 @@
           显示星座连线
         </label>
 
-        <h2>四季<wbr>星群</h2>
+        <h2>四季星群</h2>
         <ul class="sg-checks">
           <li><label class="sg-check"><input type="checkbox" data-aster="spring" checked><span class="sg-swatch sg-swatch-spring" aria-hidden="true"></span>春季大三角</label></li>
           <li><label class="sg-check"><input type="checkbox" data-aster="summer" checked><span class="sg-swatch sg-swatch-summer" aria-hidden="true"></span>夏季大三角</label></li>
@@ -173,12 +171,12 @@
         <div class="sg-row">
           <button type="button" class="sg-btn" id="sg-gyro" aria-pressed="false">陀螺仪</button>
         </div>
-        <p class="sg-note">打开后，把手机屏幕对着天空。电脑上通常没有这个传感器，仍可用手指拖动。iPhone会先询问权限。</p>
+        <p class="sg-note">打开后，把手机屏幕对着天空。电脑上通常没有这个传感器，仍可用手指拖动。iPhone 会先询问权限。</p>
 
         <h2>怎么转</h2>
         <p class="sg-note">
           拖动星图可以转向，滚轮或双指可以缩放。地面视角默认抬头看天顶，北在上方，东在左边、西在右边，星星从东边升起、往西边落下。方向键也能转。天球外观里，坐标线跟着恒星时转，地球和地平不动。
-          北京、北纬40°、东经116.4°、2026-03-20 20:00（UTC+8），织女的高度约 −10.00°，方位约11.98°。
+          北京、北纬 40°、东经 116.4°、2026-03-20 20:00（UTC+8），织女的高度约 −10.00°，方位约 11.98°。
         </p>
       </form>
     </main>
@@ -189,7 +187,7 @@
       </div>
     </footer>
     <noscript>
-      <p class="noscript-note wrap">没有JavaScript时，星图画不出来。课文和星表不依赖这一页。</p>
+      <p class="noscript-note wrap">没有 JavaScript 时，星图画不出来。课文和星表不依赖这一页。</p>
     </noscript>
     <!--
       深葵夜不在这一页出现。画布、时间、筛选和陀螺仪都贴着屏幕边缘，

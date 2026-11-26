@@ -482,10 +482,10 @@ if (typeof document !== "undefined") {
         r.compass + "（" + SkyCalc.formatDeg(r.az) + "），高度 " + SkyCalc.formatDeg(r.alt) + "。";
       root.appendChild(headline);
 
-      root.appendChild(step("1. 当地<wbr>时间换<wbr>成世界时", [
+      root.appendChild(step("1. 当地时间换成世界时", [
         "当地 " + formatLocal(opts) + "，时区 UTC" + signed(opts.tzHours) + "。",
         "世界时 = 当地时间 − 时区 = " + SkyCalc.formatClock(r.utHour) +
-          "\u00a0UT，日期是 " + r.utYear + "-" + pad2(r.utMonth) + "-" + pad2(r.utDay) + "。"
+          " UT，日期是 " + r.utYear + "-" + pad2(r.utMonth) + "-" + pad2(r.utDay) + "。"
       ]));
 
       root.appendChild(step("2. 儒略日", [
@@ -496,7 +496,7 @@ if (typeof document !== "undefined") {
 
       var gmstH = SkyCalc.degreesToHms(r.gmst);
       var lstH = SkyCalc.degreesToHms(r.lst);
-      root.appendChild(step("3. 格林尼治<wbr>平恒星时 GMST", [
+      root.appendChild(step("3. 格林尼治平恒星时 GMST", [
         "GMST = 280.46061837° + 360.98564736629° × D + 0.000387933° × T² − T³ / 38710000。",
         "得到 " + SkyCalc.formatDeg(r.gmst, 4) + "，也就是 " + clockFromHms(gmstH) + "。"
       ]));
@@ -508,13 +508,13 @@ if (typeof document !== "undefined") {
       ]));
 
       root.appendChild(step("5. 时角", [
-        angles.name + "的赤经是 " + angles.ra.hours.toFixed(5) + "\u00a0时 = " +
+        angles.name + "的赤经是 " + angles.ra.hours.toFixed(5) + " 时 = " +
           SkyCalc.formatDeg(angles.ra.degrees, 4) + "，赤纬是 " + SkyCalc.formatDeg(opts.decDeg, 4) + "。",
         "时角 H = LST − 赤经 = " + SkyCalc.formatDeg(r.ha, 4) + "。",
         r.ha < 0 ? "负时角：还在子午圈东边，尚未中天。" : "非负时角：在子午圈上或已经偏西。"
       ]));
 
-      root.appendChild(step("6. 高度角和<wbr>方位角", [
+      root.appendChild(step("6. 高度角和方位角", [
         "sin 高度 = sin 纬度 · sin 赤纬 + cos 纬度 · cos 赤纬 · cos 时角。",
         "高度角 = " + SkyCalc.formatDeg(r.alt, 3) + "。方位角（从正北向东）= " +
           SkyCalc.formatDeg(r.az, 3) + "，" + r.compass + "。",
@@ -535,11 +535,11 @@ if (typeof document !== "undefined") {
           "，落下 " + SkyCalc.formatClock(r.events.set) + "（当地时间，几何高度 0°）。");
         lines.push("还没算大气折射。地平附近折射大约 0.5°，真正看见的升起会早几分钟，落下会晚几分钟。");
       }
-      root.appendChild(step("7. 这一天的<wbr>升、<wbr>中天、落", lines));
+      root.appendChild(step("7. 这一天的升、中天、落", lines));
 
       var note = document.createElement("p");
       note.className = "calc-note";
-      note.textContent = "星表是J2000.0。和2026\u00a0年的精密星历比，岁差通常带来零点几度的差别。章动忽略后，恒星时大约只差0.005°。";
+      note.textContent = "星表是 J2000.0。和 2026 年的精密星历比，岁差通常带来零点几度的差别。章动忽略后，恒星时大约只差 0.005°。";
       root.appendChild(note);
       return root;
     }
@@ -548,11 +548,7 @@ if (typeof document !== "undefined") {
       var section = document.createElement("section");
       section.className = "calc-step";
       var h = document.createElement("h3");
-      // The fixed titles are segmented by the BudouX build step, just like HTML headings.
-      title.split("<wbr>").forEach(function (part, index) {
-        if (index) h.appendChild(document.createElement("wbr"));
-        h.appendChild(document.createTextNode(part));
-      });
+      h.textContent = title;
       section.appendChild(h);
       for (var i = 0; i < lines.length; i++) {
         var p = document.createElement("p");
