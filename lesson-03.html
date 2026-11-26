@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="icon" href="favicon.ico" sizes="any">
+    <link rel="stylesheet" href="mascot/mascot-theme.css">
+    <link rel="stylesheet" href="mascot/mascot.css">
   </head>
   <body>
     <a class="skip-link" href="#main">跳到主要内容</a>
@@ -41,15 +43,15 @@
       <section class="note">
         <h2>核心知识点</h2>
 
-        <h3>格子画在天球上</h3>
+        <h3 id="l3-grid">格子画在天球上</h3>
         <p>地平坐标的格子跟着你的地平和天顶走。赤道坐标的格子跟着天赤道和天极走，也就是跟着地球的自转轴走。地球一转，整张格子和星星一起转，所以一颗恒星的赤经、赤纬看起来不动。</p>
         <p>严格说，岁差会让这个地址每一年慢慢挪一点。星表因此要写明历元。本课和附录的表都用 J2000.0，也就是 2000 年 1 月 1 日 12 时那套春分点和天赤道。零点几度的差别留到附录再说。对学计算来说，先把一颗星当成一个固定的赤经、赤纬。</p>
 
-        <h3>赤纬</h3>
+        <h3 id="l3-dec">赤纬</h3>
         <p>赤纬从天赤道量起，向北为正，向南为负，范围是 −90° 到 +90°。天赤道上的星星赤纬是 0°。北天极是 +90°，南天极是 −90°。</p>
         <p>它和地理纬度很像：纬度告诉你在地球赤道以北或以南多少度，赤纬告诉你在天赤道以北或以南多少度。</p>
 
-        <h3>赤经</h3>
+        <h3 id="l3-ra">赤经</h3>
         <p>赤经从春分点起，沿天赤道向东量，一圈是 24 时，不是 360° 直接写在星表上。规定是：</p>
         <p class="formula">1 时 = 15°，1 时分 = 15′，1 时秒 = 15″。</p>
         <p>用「时」是因为天空大约每小时转过 1 时的赤经。星星什么时候中天，和它的赤经、以及当时的恒星时，差一个减法。那是第四课的事。</p>
@@ -76,7 +78,7 @@
           </figcaption>
         </figure>
 
-        <h3>和地平坐标比一比</h3>
+        <h3 id="l3-compare">和地平坐标比一比</h3>
         <ul>
           <li>地平坐标回答「现在往哪儿看」，随时间和地点变。</li>
           <li>赤道坐标回答「这是星表上的哪一颗」，恒星可以先当成固定。</li>
@@ -156,5 +158,12 @@
         <p>地址有了。下一课把钟点换成「此刻哪一条赤经正经过子午圈」。</p>
       </div>
     </footer>
+    <script src="mascot/mascot-persona.js"></script>
+    <script src="mascot/mascot-events.js"></script>
+    <script src="mascot/quizzes/lesson-03.js"></script>
+    <script src="mascot/mascot.js"></script>
+    <script>
+      Shenkuiye.start({ root: "mascot/", page: "lesson", lesson: "lesson-03" });
+    </script>
   </body>
 </html>

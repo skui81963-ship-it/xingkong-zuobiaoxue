@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="icon" href="favicon.ico" sizes="any">
+    <link rel="stylesheet" href="mascot/mascot-theme.css">
+    <link rel="stylesheet" href="mascot/mascot.css">
   </head>
   <body>
     <a class="skip-link" href="#main">跳到主要内容</a>
@@ -41,7 +43,7 @@
       </section>
 
       <section class="note">
-        <h2>核心知识点</h2>
+        <h2 id="l6-core">核心知识点</h2>
         <p>下面的默认值就是第四课、第五课的例题：北京时间 2026-03-20 20:00（UTC+8），北纬 40°，东经 116.4°，织女。打开页面就会看到结果。改任何一个数，结果会跟着重算。</p>
         <p>经度东正西负。时区写成小时，北京是 8，不是 800。选「自己输入赤经、赤纬」时，赤经用时分秒，赤纬用度分秒，南纬把方向改成「南」。</p>
 
@@ -179,5 +181,12 @@
     </footer>
     <!-- 普通脚本，不用 type="module"，双击 html 也能跑。 -->
     <script src="calculator.js"></script>
+    <script src="mascot/mascot-persona.js"></script>
+    <script src="mascot/mascot-events.js"></script>
+    <script src="mascot/quizzes/lesson-06.js"></script>
+    <script src="mascot/mascot.js"></script>
+    <script>
+      Shenkuiye.start({ root: "mascot/", page: "lesson", lesson: "lesson-06" });
+    </script>
   </body>
 </html>
