@@ -8,9 +8,11 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0b1020">
     <title>常用亮星坐标表 · 星空坐标学</title>
     <meta name="description" content="二十颗亮星的 J2000 赤经和赤纬，供手算和第六课计算器使用。">
     <link rel="stylesheet" href="style.css">
+    <script src="motion.js"></script>
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="icon" href="favicon.ico" sizes="any">
     <link rel="stylesheet" href="mascot/mascot-theme.css">
@@ -27,21 +29,21 @@
           星空坐标学
         </a>
         <p class="kicker">附录</p>
-        <h1>常用亮星坐标表</h1>
+        <h1>常用亮星<wbr>坐标表</h1>
       </div>
     </header>
     <main class="wrap lesson-main" id="main">
-      <p class="goal"><strong>历元：</strong>J2000.0。表中赤经换成度时乘 15。南纬的赤纬在计算里要加负号。</p>
+      <p class="goal"><strong>历元：</strong>J2000.0。表中赤经换成度时乘15。南纬的赤纬在计算里要加负号。</p>
 
       <section class="note">
-        <h2>一句话概括</h2>
-        <p>这 20 颗星的赤经、赤纬可以当成固定地址来做本课的练习；它们不是行星的位置。</p>
+        <h2>一句话<wbr>概括</h2>
+        <p>这20 颗星的赤经、赤纬可以当成固定地址来做本课的练习；它们不是行星的位置。</p>
       </section>
 
       <section class="note">
-        <h2>核心知识点</h2>
-        <p>星等是目视星等，只帮助你知道好不好找，不参加坐标计算。多星系统的星等是肉眼看到的合光。参宿四、大角等会略微变光，星等只取常见值。</p>
-        <p>赤经的「时」和钟点不是同一件事，但 1 时赤经 = 15°。最后两列是已经换好的小数，方便直接代进第五课的公式。</p>
+        <h2>核心<wbr>知识点</h2>
+        <p class="prose-measure">星等是目视星等，只帮助你知道好不好找，不参加坐标计算。多星系统的星等是肉眼看到的合光。参宿四、大角等会略微变光，星等只取常见值。</p>
+        <p>赤经的「时」和钟点不是同一件事，但1 时赤经 = 15°。最后两列是已经换好的小数，方便直接代进第五课的公式。</p>
         <!-- table 是表格。th 是表头，td 是一格数据。外层 div 让手机可以横滑。 -->
         <div class="table-wrap">
           <table class="data">
@@ -50,8 +52,8 @@
                 <th>中文名</th>
                 <th>拜耳名</th>
                 <th>星等</th>
-                <th>赤经 J2000</th>
-                <th>赤纬 J2000</th>
+                <th>赤经J2000</th>
+                <th>赤纬J2000</th>
                 <th>赤经（时）</th>
                 <th>赤纬（度）</th>
               </tr>
@@ -80,33 +82,33 @@
             </tbody>
           </table>
         </div>
-        <p>河鼓二就是牛郎星。织女、河鼓二、天津四组成夏季大三角。参宿四和参宿七在猎户座。小数由时分秒换算而来，和第六课内部用的值一致，末位四舍五入到上表的位数。</p>
+        <p class="prose-measure">河鼓二就是牛郎星。织女、河鼓二、天津四组成夏季大三角。参宿四和参宿七在猎户座。小数由时分秒换算而来，和第六课内部用的值一致，末位四舍五入到上表的位数。</p>
       </section>
 
       <section class="note">
-        <h2>有趣的事实</h2>
+        <h2>有趣的<wbr>事实</h2>
         <ul>
-          <li>天狼是全天最亮的恒星，赤纬大约 −16.7°。在北京它会升起，中天高度大约 33°。</li>
-          <li>老人（老人星）和水委一的赤纬都在 −50° 以南，北纬 40° 的地方看不见它们。</li>
-          <li>北极星的赤纬不是 +90°。J2000 时它离北天极大约 0.74°，所以高度会绕着你的纬度画一个很小的圈。</li>
+          <li>天狼是全天最亮的恒星，赤纬大约 −16.7°。在北京它会升起，中天高度大约33°。</li>
+          <li>老人（老人星）和水委一的赤纬都在 −50° 以南，北纬40° 的地方看不见它们。</li>
+          <li>北极星的赤纬不是 +90°。J2000 时它离北天极大约0.74°，所以高度会绕着你的纬度画一个很小的圈。</li>
         </ul>
       </section>
 
       <section class="note">
-        <h2>小练习</h2>
+        <h2>小<wbr>练习</h2>
         <ol class="exercises">
           <li>
-            <p>用表把天狼的赤经 6.752477 时换成度，保留一位小数。</p>
+            <p>用表把天狼的赤经6.752477 时换成度，保留一位小数。</p>
             <details class="answer">
               <summary>查看答案</summary>
-              <p>6.752477 × 15 = 101.287°，大约 101.3°。</p>
+              <p>6.752477 × 15 = 101.287°，大约101.3°。</p>
             </details>
           </li>
           <li>
-            <p>北纬 40° 的人，表里哪些星显然是拱极星？只看赤纬。</p>
+            <p>北纬40° 的人，表里哪些星显然是拱极星？只看赤纬。</p>
             <details class="answer">
               <summary>查看答案</summary>
-              <p>赤纬要大于约 +50°。这 20 颗里只有北极星（+89.26°）满足。天津四 +45.3°、五车二 +46.0° 还差一点，会落下，但落下的时间很短。</p>
+              <p>赤纬要大于约 +50°。这20 颗里只有北极星（+89.26°）满足。天津四 +45.3°、五车二 +46.0° 还差一点，会落下，但落下的时间很短。</p>
             </details>
           </li>
         </ol>
@@ -115,7 +117,7 @@
       <section class="note">
         <h2>参考资料</h2>
         <ul class="refs">
-          <li>坐标取自 J2000.0 / ICRS 的亮星位置，四舍五入到表上的位数。织女、天狼、北极星与 SIMBAD 的 ICRS 坐标一致到 0.001 时秒、0.01 角秒。</li>
+          <li>坐标取自J2000.0 / ICRS的亮星位置，四舍五入到表上的位数。织女、天狼、北极星与SIMBAD的ICRS坐标一致到0.001 时秒、0.01 角秒。</li>
           <li>第六课下拉菜单使用同一组时、分、秒，避免手算和网页各用一套数。</li>
         </ul>
       </section>
@@ -128,7 +130,7 @@
     </main>
     <footer class="site-footer">
       <div class="wrap">
-        <p>坐标是 2000 年的。下一页说明为什么不能把它们直接当成今晚的精密位置，也不能拿去算行星。</p>
+        <p>坐标是2000 年的。下一页说明为什么不能把它们直接当成今晚的精密位置，也不能拿去算行星。</p>
       </div>
     </footer>
     <script src="mascot/mascot-persona.js"></script>

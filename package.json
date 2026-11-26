@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "node tools/build-site.mjs",
+    "typography": "node tools/segment-headings.mjs",
+    "typography:check": "node tools/segment-headings.mjs --check"
+  },
+  "devDependencies": {
+    "budoux": "0.10.4"
+  }
+}

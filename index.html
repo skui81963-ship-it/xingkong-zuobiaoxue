@@ -19,6 +19,7 @@
     -->
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0b1020">
     <!--
       viewport 是给手机用的。
       width=device-width 表示「按手机的真实宽度来排版」，
@@ -32,6 +33,9 @@
     <!-- description 是给搜索引擎和链接预览看的一句话，页面上不显示。 -->
 
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="home.css">
+    <script src="motion.js"></script>
+    <script src="home-sky.js" defer></script>
     <!--
       把旁边的 style.css 接进来。href 用的是相对路径：
       不写网址、不写盘符，浏览器就到和 index.html 同一个文件夹里找 style.css。
@@ -39,50 +43,64 @@
     -->
 
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <link rel="icon" href="favicon.ico" sizes="any">
     <link rel="stylesheet" href="mascot/mascot-theme.css">
     <link rel="stylesheet" href="mascot/mascot.css">
-    <!--
-      标签页上的小星星。svg 给现代浏览器，ico 给还会自动来要 favicon.ico 的浏览器。
-      两个文件都在网站根目录，相对路径，两页共用。
-    -->
   </head>
 
-  <body>
+  <body class="home">
     <!-- body 里面的内容才会被画到页面上。 -->
 
     <a class="skip-link" href="#main">跳到主要内容</a>
     <!-- 给用键盘操作的人：按 Tab 时可以跳过页头，直接进入正文。 -->
 
-    <header class="site-header">
-      <!-- header 是页头，放站名和这一页最重要的介绍。 -->
-      <div class="wrap">
-        <!-- wrap 这个 class 在 CSS 里把内容限制成适合阅读的一栏，并且居中。 -->
-
-        <p class="brand">
-          <!--
-            这里的小图是「内联 SVG」：图的代码直接写在 HTML 里，不另存图片文件。
-            它是装饰，所以加了 aria-hidden="true"，朗读软件会跳过它。
-          -->
-          <svg viewBox="0 0 16 16" aria-hidden="true">
-            <path fill="#e6c27a" d="M8 0.8 L9.1 6.4 L15.2 8 L9.1 9.6 L8 15.2 L6.9 9.6 L0.8 8 L6.9 6.4 Z"/>
-          </svg>
-          面向初学者的天文小课
-        </p>
-        <h1>星空坐标学</h1>
-        <!-- 每一页只放一个 h1，表示这页最大的标题。 -->
-
-        <p class="lead">
-          这门课要学会一件具体的事：给定时间和地点，算出一颗星会出现在天空的哪一个方向、离地平线有多高。做法是先把天空看成一个假想的大圆球，再在球面上建立坐标，并把钟表时间换成天空转过的角度。你不需要先学完高等数学；看得懂角度，会做四则运算，就可以从第一课开始。
-        </p>
+    <main>
+    <section class="home-hero" aria-labelledby="home-title">
+      <div class="home-sky" aria-hidden="true">
+        <canvas class="home-starfield"></canvas>
+        <div class="home-constellation home-dipper">
+          <pre>  *
+   `-._
+       *--.*
+            `--*------*
+                \      /
+                 *----*</pre>
+          <span>01 / URSA MAJOR</span>
+        </div>
+        <div class="home-constellation home-orion">
+          <pre>           *
+          /
+     * .-*--.*
+      \      /
+       .  . *
+        *-*'
+       /   `.
+      *      `--*</pre>
+          <span>02 / ORION</span>
+        </div>
       </div>
-    </header>
 
-    <main class="wrap toc-section" id="main">
-      <!-- main 是这一页唯一的主要内容。id 要和上面 skip-link 的 #main 对应。 -->
+      <div class="home-hero-copy">
+        <h1 id="home-title">抬头看星空<br><span>读懂星星的坐标</span></h1>
+        <div class="home-actions">
+          <a class="home-start" href="lesson-01.html">开始第一课 <span aria-hidden="true">-&gt;</span></a>
+          <a class="home-more" href="#main">查看课程</a>
+        </div>
+      </div>
+      <div class="home-sky-footer">
+        <span class="home-readout" aria-hidden="true">[ FIELD 01 ]</span>
+        <a class="home-scroll" href="#main" aria-label="向下查看课程目录">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m7 10 5 5 5-5"/>
+          </svg>
+        </a>
+      </div>
+    </section>
 
-      <h2>课程目录</h2>
-      <p class="section-lead">六课、虚拟观星、实用星座模拟和三份附录都可以读。建议按顺序来：先把天球和两种坐标认熟，再算时间和升落，用计算器核对，用虚拟观星看这些坐标怎么动，用实用星座模拟认全天的星座。</p>
+    <section class="wrap toc-section" id="main" aria-labelledby="courses-title" tabindex="-1">
+
+      <h2 id="courses-title">课程<wbr>目录</h2>
+      <p class="section-lead prose-measure">把天空想成一个大圆球，在球面上建立坐标，再把钟表时间换成天空转过的角度。不用先学高等数学：看得懂角度，会做四则运算，就可以从第一课开始。</p>
+      <p class="section-lead prose-measure">六课、虚拟观星、实用星座模拟和三份附录都可以读。建议按顺序来：先把天球和两种坐标认熟，再算时间和升落，用计算器核对，用虚拟观星看这些坐标怎么动，用实用星座模拟认全天的星座。</p>
 
       <!--
         ol 是有序列表：浏览器知道这是 1、2、3 排下来的步骤。
@@ -96,7 +114,7 @@
           <a class="toc-card" href="lesson-01.html">
             <span class="toc-index">01</span>
             <span class="toc-body">
-              <span class="toc-title">天球是什么</span>
+              <span class="toc-title">天球<wbr>是什么</span>
               <span class="toc-desc">先在脑海里放一个大圆球，认识天顶、地平、天极、天赤道、黄道和春分点。</span>
             </span>
             <span class="toc-status">阅读</span>
@@ -118,7 +136,7 @@
           <a class="toc-card" href="lesson-03.html">
             <span class="toc-index">03</span>
             <span class="toc-body">
-              <span class="toc-title">赤道坐标系</span>
+              <span class="toc-title">赤道<wbr>坐标系</span>
               <span class="toc-desc">用赤经和赤纬，描述星星在天球上不随地点改变的位置。</span>
             </span>
             <span class="toc-status">阅读</span>
@@ -129,7 +147,7 @@
           <a class="toc-card" href="lesson-04.html">
             <span class="toc-index">04</span>
             <span class="toc-body">
-              <span class="toc-title">时间与恒星时</span>
+              <span class="toc-title">时间<wbr>与恒星时</span>
               <span class="toc-desc">把钟表上的时间，换成天空已经转到了哪一个角度。</span>
             </span>
             <span class="toc-status">阅读</span>
@@ -140,7 +158,7 @@
           <a class="toc-card" href="lesson-05.html">
             <span class="toc-index">05</span>
             <span class="toc-body">
-              <span class="toc-title">坐标转换与升落计算</span>
+              <span class="toc-title">坐标<wbr>转换<wbr>与升落<wbr>计算</span>
               <span class="toc-desc">由赤经、赤纬算出升起、落下和中天的时刻与方位。</span>
             </span>
             <span class="toc-status">阅读</span>
@@ -173,8 +191,8 @@
           <a class="toc-card" href="constellations.html">
             <span class="toc-index">座</span>
             <span class="toc-body">
-              <span class="toc-title">实用星座模拟</span>
-              <span class="toc-desc">全天 88 个星座的棍棒图和中文名。可以调地面透明、银河和边界，也能按名字搜索并转到那个星座。</span>
+              <span class="toc-title">实用<wbr>星座<wbr>模拟</span>
+              <span class="toc-desc">全天88 个星座的棍棒图和中文名。可以调地面透明、银河和边界，也能按名字搜索并转到那个星座。</span>
             </span>
             <span class="toc-status">练习</span>
           </a>
@@ -196,22 +214,31 @@
           </div>
         </li>
       </ol>
+    </section>
     </main>
 
     <footer class="site-footer">
       <div class="wrap">
-        <p>六课从天球讲到能手算升落。计算器用来核对，虚拟观星用来看这些坐标怎么动，实用星座模拟用来认全天 88 个星座。</p>
+        <p>六课从天球讲到能手算升落。计算器用来核对，虚拟观星用来看这些坐标怎么动，实用星座模拟用来认全天88 个星座。</p>
       </div>
     </footer>
     <!--
-      深葵夜。首页每天第一次打开，先播一段全屏问候，再缩到右侧。
+      深葵夜在右侧陪伴，不自动用全屏问候遮住首屏。
       台词、事件和图片都在 mascot/ 文件夹里。
     -->
     <script src="mascot/mascot-persona.js"></script>
     <script src="mascot/mascot-events.js"></script>
     <script src="mascot/mascot.js"></script>
     <script>
-      Shenkuiye.start({ root: "mascot/", page: "home" });
+      const replayWelcome = new URLSearchParams(location.search).get("shenkuiye") === "reset";
+      if (!replayWelcome && "IntersectionObserver" in window) {
+        const hero = document.querySelector(".home-hero");
+        document.body.classList.add("home-hero-visible");
+        new IntersectionObserver(([entry]) => {
+          document.body.classList.toggle("home-hero-visible", entry.intersectionRatio >= 0.15);
+        }, { threshold: 0.15 }).observe(hero);
+      }
+      Shenkuiye.start({ root: "mascot/", page: replayWelcome ? "home" : "companion" });
     </script>
   </body>
 </html>

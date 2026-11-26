@@ -11,7 +11,8 @@
   padding-right: 0.15rem;
 }
 
-#sg-cons li {
+#sg-cons li,
+.sg-filter-layer li {
   display: flex;
   align-items: center;
   gap: 0.15rem;
@@ -23,8 +24,41 @@
   display: none;
 }
 
-#sg-cons li.is-current {
+#sg-cons li.is-current,
+.sg-filter-layer li.is-current {
   outline: 1px solid var(--sg-focus);
+}
+
+/* 过渡绘制在同一个滚动区域的裁剪框内，点击仍落在真实列表上。 */
+.sg-filter-layer {
+  position: fixed;
+  inset: 0;
+  /* Safari 不应从透明的全屏动画容器取工具栏颜色。 */
+  visibility: hidden;
+  z-index: 5;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  user-select: none;
+  font: var(--sg-font-size) / var(--sg-line-height) var(--sg-font);
+  color: var(--sg-text);
+}
+
+.sg-filter-layer,
+.sg-filter-layer * {
+  pointer-events: none;
+}
+
+.sg-filter-layer li {
+  position: absolute;
+  visibility: visible;
+  transform-origin: top left;
+}
+
+.sg-filter-layer input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  accent-color: var(--sg-focus);
 }
 
 .sg-cons-jump {
@@ -39,9 +73,12 @@
   cursor: pointer;
 }
 
-.sg-cons-jump:hover,
 .sg-cons-jump:focus-visible {
   color: var(--sg-text-strong);
+}
+
+@media (hover: hover) {
+  .sg-cons-jump:hover { color: var(--sg-text-strong); }
 }
 
 .sg-slider {
@@ -60,7 +97,6 @@
 
 .sg-slider-top span {
   color: var(--sg-text-strong);
-  font-variant-numeric: tabular-nums;
 }
 
 .sg-panel .sg-note {

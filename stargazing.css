@@ -45,6 +45,12 @@
   cursor: grabbing;
 }
 
+.sg-stage .sg-sky-outgoing {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
 .sg-hud {
   position: absolute;
   top: 0.55rem;
@@ -57,7 +63,6 @@
   background: var(--sg-hud-bg);
   border-radius: var(--sg-radius-sm);
   pointer-events: none;
-  font-variant-numeric: tabular-nums;
 }
 
 .sg-hud p {
@@ -127,6 +132,25 @@
   background: var(--sg-btn-on-bg);
   border: 1px solid var(--sg-btn-on-border);
   color: var(--sg-btn-on-fg);
+}
+
+.sg-row.sg-indicator-moving {
+  position: relative;
+  isolation: isolate;
+}
+
+.sg-indicator {
+  position: absolute;
+  border: 1px solid var(--sg-btn-on-border);
+  border-radius: var(--sg-btn-radius);
+  background: var(--sg-btn-on-bg);
+  pointer-events: none;
+  z-index: -1;
+  transform-origin: top left;
+}
+
+.sg-indicator-moving > .sg-btn.sg-segment-active {
+  background: transparent;
 }
 
 .sg-grid {

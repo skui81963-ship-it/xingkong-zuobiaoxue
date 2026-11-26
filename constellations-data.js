@@ -2530,6 +2530,14 @@ var StarGazeIAU = (function () {
 
   function fillList(ul) {
     var i;
+    function updateTitle(btn) {
+      btn.title = btn.scrollWidth > btn.clientWidth
+        ? btn.textContent + " · " + btn.dataset.catalogTitle
+        : btn.dataset.catalogTitle;
+    }
+    var observer = typeof ResizeObserver === "function" && new ResizeObserver(function (entries) {
+      entries.forEach(function (entry) { updateTitle(entry.target); });
+    });
     while (ul.firstChild) ul.removeChild(ul.firstChild);
     for (i = 0; i < CONS.length; i++) {
       var c = CONS[i];
@@ -2548,13 +2556,17 @@ var StarGazeIAU = (function () {
       label.appendChild(box);
       var btn = document.createElement("button");
       btn.type = "button";
-      btn.className = "sg-cons-jump";
+      btn.className = "sg-cons-jump truncate-label";
       btn.setAttribute("data-jump", c[0]);
       btn.textContent = c[2];
-      btn.title = c[3] + " · " + c[1];
+      btn.dataset.catalogTitle = c[3] + " · " + c[1];
+      btn.addEventListener("pointerenter", function () { updateTitle(this); });
+      btn.addEventListener("focus", function () { updateTitle(this); });
+      btn.title = btn.dataset.catalogTitle;
       li.appendChild(label);
       li.appendChild(btn);
       ul.appendChild(li);
+      if (observer) observer.observe(btn);
     }
   }
 

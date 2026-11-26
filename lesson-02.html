@@ -8,9 +8,11 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0b1020">
     <title>地平坐标系 · 星空坐标学</title>
     <meta name="description" content="第二课：方位角从正北向东量，高度角从地平线向天顶量。">
     <link rel="stylesheet" href="style.css">
+    <script src="motion.js"></script>
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="icon" href="favicon.ico" sizes="any">
     <link rel="stylesheet" href="mascot/mascot-theme.css">
@@ -37,24 +39,24 @@
       </p>
 
       <section class="note">
-        <h2>一句话概括</h2>
+        <h2>一句话<wbr>概括</h2>
         <p>地平坐标系回答的是「这颗星此刻在我的哪一边、有多高」。方位从正北向东量，高度从地平线向天顶量。</p>
       </section>
 
       <section class="note">
-        <h2>核心知识点</h2>
+        <h2>核心<wbr>知识点</h2>
 
-        <h3 id="l2-local">这个坐标系钉在你身上</h3>
-        <p>第一课的地平圈、天顶、天底，就是这套坐标的骨架。原点在观测者。地平圈是高度 0° 的那一圈，天顶是高度 +90°，天底是高度 −90°。</p>
-        <p>你转身、走动，或者只是干等着地球自转，同一颗星的地平坐标都会变。所以它适合描述「现在往哪儿看」，不适合写成星表。星表用的是下一课的赤经、赤纬。</p>
+        <h3 id="l2-local">这个<wbr>坐标系钉<wbr>在你<wbr>身上</h3>
+        <p>第一课的地平圈、天顶、天底，就是这套坐标的骨架。原点在观测者。地平圈是高度0° 的那一圈，天顶是高度 +90°，天底是高度 −90°。</p>
+        <p class="prose-measure">你转身、走动，或者只是干等着地球自转，同一颗星的地平坐标都会变。所以它适合描述「现在往哪儿看」，不适合写成星表。星表用的是下一课的赤经、赤纬。</p>
 
         <h3 id="l2-az">方位角</h3>
-        <p>方位角沿着地平圈量。本课规定：正北是 0°，向东增加到 90°（正东），180° 是正南，270° 是正西，再转回 360° 又是正北。</p>
-        <p>有的天文书从正南起量、向西增加。那是另一种习惯，和导航罗盘差 180°。本站全部从正北向东量，和指南针一致。看到别的书时，先看它的 0° 在南还是在北。</p>
+        <p>方位角沿着地平圈量。本课规定：正北是0°，向东增加到90°（正东），180° 是正南，270° 是正西，再转回360° 又是正北。</p>
+        <p class="prose-measure">有的天文书从正南起量、向西增加。那是另一种习惯，和导航罗盘差180°。本站全部从正北向东量，和指南针一致。看到别的书时，先看它的0° 在南还是在北。</p>
 
         <h3 id="l2-alt">高度角</h3>
-        <p>高度角从地平圈向上量到那颗星。地平线上是 0°，天顶是 +90°。星星落到地平线以下，高度就是负数，最低到天底的 −90°。</p>
-        <p>计算里的地平是和重力垂直的真地平，不是楼和山切出来的那条线。大气还会把贴近地平的星星抬高大约半度，那是后面升落计算里的修正，这一课先用几何高度。</p>
+        <p>高度角从地平圈向上量到那颗星。地平线上是0°，天顶是 +90°。星星落到地平线以下，高度就是负数，最低到天底的 −90°。</p>
+        <p class="prose-measure">计算里的地平是和重力垂直的真地平，不是楼和山切出来的那条线。大气还会把贴近地平的星星抬高大约半度，那是后面升落计算里的修正，这一课先用几何高度。</p>
 
         <figure class="diagram">
           <div class="diagram-panel">
@@ -73,12 +75,12 @@
                   <line id="az-ray" class="line-horizon" x1="140" y1="140" x2="140" y2="48"></line>
                   <circle class="dot-observer" cx="140" cy="140" r="4"></circle>
                   <circle id="az-dot" class="dot-ncp" cx="140" cy="48" r="5"></circle>
-                  <text class="label-gold" x="140" y="28" text-anchor="middle">北 0°</text>
-                  <text class="label-dim" x="250" y="144" text-anchor="start">东 90°</text>
-                  <text class="label-dim" x="140" y="262" text-anchor="middle">南 180°</text>
-                  <text class="label-dim" x="30" y="144" text-anchor="end">西 270°</text>
+                  <text class="label-gold" x="140" y="28" text-anchor="middle">北0°</text>
+                  <text class="label-dim" x="250" y="144" text-anchor="start">东90°</text>
+                  <text class="label-dim" x="140" y="262" text-anchor="middle">南180°</text>
+                  <text class="label-dim" x="30" y="144" text-anchor="end">西270°</text>
                 </svg>
-                <p id="az-readout" class="readout">方位角 0°，正北。从正北起、向东量。</p>
+                <p id="az-readout" class="readout">方位角0°，正北。从正北起、向东量。</p>
               </div>
               <div>
                 <div class="lat-top">
@@ -94,59 +96,59 @@
                   <line class="line-upright" x1="160" y1="40" x2="160" y2="150"></line>
                   <circle id="alt-star" class="dot-ncp" cx="236.6" cy="85.7" r="6"></circle>
                   <text class="label-dim" x="160" y="28" text-anchor="middle">天顶 +90°</text>
-                  <text class="label-gold" x="160" y="168" text-anchor="middle">地平 0°</text>
+                  <text class="label-gold" x="160" y="168" text-anchor="middle">地平0°</text>
                 </svg>
-                <p id="alt-readout" class="readout">高度角 40°，在地平线以上。天顶是 +90°，天底是 −90°。</p>
+                <p id="alt-readout" class="readout">高度角40°，在地平线以上。天顶是 +90°，天底是 −90°。</p>
               </div>
             </div>
             <noscript>
-              <p class="noscript-note">没有 JavaScript 时，图停在方位 0°、高度 40°。拖动需要打开脚本。</p>
+              <p class="noscript-note">没有JavaScript时，图停在方位0°、高度40°。拖动需要打开脚本。</p>
             </noscript>
           </div>
           <figcaption>
-            左边是俯视罗盘，东在右边，和地图一样，不是抬头看到的左右。右边只画高度：星星沿圆弧升降，不管它在东边还是西边。北京看北极星，高度大约就是 40°，方位接近正北。
+            左边是俯视罗盘，东在右边，和地图一样，不是抬头看到的左右。右边只画高度：星星沿圆弧升降，不管它在东边还是西边。北京看北极星，高度大约就是40°，方位接近正北。
           </figcaption>
         </figure>
 
         <div class="example">
-          <h3>一个可以直接用的例子</h3>
-          <p>站在北京（约北纬 40°），北极星的高度角大约是 40°，方位角大约是 0°。它离北天极还有大约 0.6°，所以高度会在 40° 上下不到 1° 的范围里慢慢转，方位也不会正好钉在正北，但肉眼几乎就当它在正北。</p>
-          <p>正东地平线上刚升起的星星：方位角 90°，高度角 0°。走到天顶的星星：高度角 +90°，方位角反而不好说，因为四面八方都在脚下。</p>
+          <h3>一个<wbr>可以直接用的<wbr>例子</h3>
+          <p class="prose-measure">站在北京（约北纬40°），北极星的高度角大约是40°，方位角大约是0°。它离北天极还有大约0.6°，所以高度会在40° 上下不到1° 的范围里慢慢转，方位也不会正好钉在正北，但肉眼几乎就当它在正北。</p>
+          <p>正东地平线上刚升起的星星：方位角90°，高度角0°。走到天顶的星星：高度角 +90°，方位角反而不好说，因为四面八方都在脚下。</p>
         </div>
       </section>
 
       <section class="note">
-        <h2>有趣的事实</h2>
+        <h2>有趣的<wbr>事实</h2>
         <ul>
           <li>同一颗星，在北京和在悉尼的方位、高度完全不同。地平坐标属于观测者，不属于星星。</li>
-          <li>高度每增加 1°，大约相当于你伸直手臂时，小指宽度的两倍多一点。粗略找星用这个就够。</li>
+          <li>高度每增加1°，大约相当于你伸直手臂时，小指宽度的两倍多一点。粗略找星用这个就够。</li>
           <li>航海和气象说的方位，多半也是从正北向东量。本课故意跟这个习惯走，后面的计算器也是。</li>
         </ul>
       </section>
 
       <section class="note">
-        <h2>小练习</h2>
+        <h2>小<wbr>练习</h2>
         <p>先自己答，再点开「查看答案」。</p>
         <ol class="exercises">
           <li>
-            <p>一颗星的方位角是 270°，高度角是 30°。它在你的哪一边，高不高？</p>
+            <p>一颗星的方位角是270°，高度角是30°。它在你的哪一边，高不高？</p>
             <details class="answer">
               <summary>查看答案</summary>
-              <p>在正西，地平线以上 30°。270° 是从正北向东转过四分之三个圆，正好是西。</p>
+              <p>在正西，地平线以上30°。270° 是从正北向东转过四分之三个圆，正好是西。</p>
             </details>
           </li>
           <li>
             <p>为什么星表里通常不印「方位角和高度角」？</p>
             <details class="answer">
               <summary>查看答案</summary>
-              <p>因为这两个数同时取决于你在哪里、现在是几点。换一个城市或过一小时，数字就变了。星表要印不随地点乱改的坐标，那是赤经和赤纬。</p>
+              <p class="prose-measure">因为这两个数同时取决于你在哪里、现在是几点。换一个城市或过一小时，数字就变了。星表要印不随地点乱改的坐标，那是赤经和赤纬。</p>
             </details>
           </li>
           <li>
-            <p>一本书写「方位从正南向西量，这颗星的方位是 0°」。改成我们的从正北向东量，是多少度？</p>
+            <p>一本书写「方位从正南向西量，这颗星的方位是0°」。改成我们的从正北向东量，是多少度？</p>
             <details class="answer">
               <summary>查看答案</summary>
-              <p>180°。从正南量的 0° 就是正南，从正北向东量时正南是 180°。两种习惯差 180°。</p>
+              <p>180°。从正南量的0° 就是正南，从正北向东量时正南是180°。两种习惯差180°。</p>
             </details>
           </li>
         </ol>
@@ -155,9 +157,9 @@
       <section class="note">
         <h2>参考资料</h2>
         <ul class="refs">
-          <li>Jean Meeus, <cite>Astronomical Algorithms</cite>，第 12 章。书中方位从正南向西量；改成从正北向东量时，加上 180°。</li>
+          <li>Jean Meeus, <cite>Astronomical Algorithms</cite>，第12章。书中方位从正南向西量；改成从正北向东量时，加上180°。</li>
           <li>苏宜《天文学新概论》（科学出版社），地平坐标系一节。</li>
-          <li>下一课开始用的星位，记在附录的亮星表里，历元是 J2000.0。</li>
+          <li>下一课开始用的星位，记在附录的亮星表里，历元是J2000.0。</li>
           <li><a href="stargazing.html">虚拟观星</a>的地面视角把方位角和高度角画出来：东升、西落，北天极的高度接近纬度。</li>
           <li><a href="constellations.html">实用星座模拟</a>用同一套方位角和高度角画出全天星座。地面调成透明时，地平线以下的星星也留在画面上。</li>
         </ul>
