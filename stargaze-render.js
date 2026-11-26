@@ -30,37 +30,37 @@ var StarGazeRender = (function () {
     var cs = getComputedStyle(document.documentElement);
     return {
       font: pick(cs, "--sg-font", "sans-serif"),
-      skyTop: pick(cs, "--sg-sky-top", "#243156"),
-      skyBottom: pick(cs, "--sg-sky-bottom", "#070b16"),
-      ground: pick(cs, "--sg-ground", "#1c140e"),
-      horizon: pick(cs, "--sg-horizon", "#e6c27a"),
-      horizonGlow: pick(cs, "--sg-horizon-glow", "rgba(230,194,122,0.35)"),
-      cardinal: pick(cs, "--sg-cardinal", "#f3d7a1"),
-      star: pick(cs, "--sg-star", "#fff6e4"),
-      starHalo: pick(cs, "--sg-star-halo", "rgba(255,246,228,0.35)"),
-      label: pick(cs, "--sg-label", "#f4f0e6"),
+      skyTop: pick(cs, "--sg-sky-top", "#3a1a48"),
+      skyBottom: pick(cs, "--sg-sky-bottom", "#100814"),
+      ground: pick(cs, "--sg-ground", "#1c1010"),
+      horizon: pick(cs, "--sg-horizon", "#e8b496"),
+      horizonGlow: pick(cs, "--sg-horizon-glow", "rgba(232,180,150,0.35)"),
+      cardinal: pick(cs, "--sg-cardinal", "#f4cdb8"),
+      star: pick(cs, "--sg-star", "#fff4ec"),
+      starHalo: pick(cs, "--sg-star-halo", "rgba(255,244,236,0.35)"),
+      label: pick(cs, "--sg-label", "#f6ede8"),
       labelSize: pick(cs, "--sg-label-size", "12px"),
       starScale: parseFloat(pick(cs, "--sg-star-scale", "1")) || 1,
-      constLine: pick(cs, "--sg-const-line", "rgba(232,214,176,0.72)"),
+      constLine: pick(cs, "--sg-const-line", "rgba(232,200,180,0.72)"),
       constWidth: parseFloat(pick(cs, "--sg-const-line-width", "1.15")) || 1.15,
       asterWidth: parseFloat(pick(cs, "--sg-aster-line-width", "2.15")) || 2.15,
-      gridAlt: pick(cs, "--sg-grid-altaz", "rgba(244,240,230,0.28)"),
-      gridEq: pick(cs, "--sg-grid-eq", "rgba(143,208,198,0.4)"),
-      equator: pick(cs, "--sg-equator", "#8fd0c6"),
-      pole: pick(cs, "--sg-pole", "#f0a8c4"),
-      axis: pick(cs, "--sg-axis", "rgba(240,168,196,0.85)"),
-      limb: pick(cs, "--sg-sphere-limb", "rgba(244,240,230,0.45)"),
-      sphereFill: pick(cs, "--sg-sphere-fill", "rgba(180,200,255,0.05)"),
-      ocean: pick(cs, "--sg-earth-ocean", "#2c527c"),
+      gridAlt: pick(cs, "--sg-grid-altaz", "rgba(246,237,232,0.28)"),
+      gridEq: pick(cs, "--sg-grid-eq", "rgba(142,200,196,0.4)"),
+      equator: pick(cs, "--sg-equator", "#8ec8c4"),
+      pole: pick(cs, "--sg-pole", "#f090b0"),
+      axis: pick(cs, "--sg-axis", "rgba(240,144,176,0.85)"),
+      limb: pick(cs, "--sg-sphere-limb", "rgba(246,237,232,0.45)"),
+      sphereFill: pick(cs, "--sg-sphere-fill", "rgba(220,160,220,0.06)"),
+      ocean: pick(cs, "--sg-earth-ocean", "#3a3a6c"),
       land: pick(cs, "--sg-earth-land", "#6d9464"),
-      observer: pick(cs, "--sg-observer", "#f3d7a1"),
+      observer: pick(cs, "--sg-observer", "#f4cdb8"),
       backStar: parseFloat(pick(cs, "--sg-back-star", "0.28")) || 0.28,
-      milky: pick(cs, "--sg-milky", "#d5def8"),
-      boundary: pick(cs, "--sg-boundary", "rgba(196, 176, 224, 0.8)"),
+      milky: pick(cs, "--sg-milky", "#ead6e4"),
+      boundary: pick(cs, "--sg-boundary", "rgba(214, 186, 232, 0.82)"),
       boundaryWidth: parseFloat(pick(cs, "--sg-boundary-width", "0.9")) || 0.9,
-      highlight: pick(cs, "--sg-highlight", "#ffe08a"),
+      highlight: pick(cs, "--sg-highlight", "#ffd0a4"),
       highlightWidth: parseFloat(pick(cs, "--sg-highlight-width", "2.4")) || 2.4,
-      consName: pick(cs, "--sg-cons-name", "#f3d7a1"),
+      consName: pick(cs, "--sg-cons-name", "#f4cdb8"),
       consNameSize: pick(cs, "--sg-cons-name-size", "13px"),
       spring: pick(cs, "--sg-spring", "#7dcea0"),
       summer: pick(cs, "--sg-summer", "#f0a0c4"),
@@ -730,11 +730,29 @@ var StarGazeRender = (function () {
     };
   }
 
+  /* 把颜色收成透明边，让银河带子两侧淡出时仍跟主题色一致。 */
+  function transparentOf(color) {
+    var m = String(color).trim();
+    var h, r, g, b, rgb;
+    if (m.charAt(0) === "#") {
+      h = m.slice(1);
+      if (h.length === 3) h = h.charAt(0) + h.charAt(0) + h.charAt(1) + h.charAt(1) + h.charAt(2) + h.charAt(2);
+      r = parseInt(h.slice(0, 2), 16);
+      g = parseInt(h.slice(2, 4), 16);
+      b = parseInt(h.slice(4, 6), 16);
+      return "rgba(" + r + "," + g + "," + b + ",0)";
+    }
+    rgb = m.match(/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/);
+    if (rgb) return "rgba(" + rgb[1] + "," + rgb[2] + "," + rgb[3] + ",0)";
+    return "rgba(234,214,228,0)";
+  }
+
   function fillMilkyQuad(ctx, a, b, alpha, color) {
+    var edge = transparentOf(color);
     var grd = ctx.createLinearGradient(a.n.x, a.n.y, a.s.x, a.s.y);
-    grd.addColorStop(0, "rgba(215,224,251,0)");
+    grd.addColorStop(0, edge);
     grd.addColorStop(0.5, color);
-    grd.addColorStop(1, "rgba(215,224,251,0)");
+    grd.addColorStop(1, edge);
     ctx.fillStyle = grd;
     ctx.globalAlpha = alpha;
     ctx.beginPath();
